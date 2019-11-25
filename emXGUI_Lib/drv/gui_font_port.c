@@ -48,6 +48,9 @@ extern const char ASCII_32_4BPP[];
 HFONT defaultFont =NULL;
 HFONT logoFont100 =NULL;
 
+/* logo×ÖÌå */
+HFONT logoFont =NULL;
+
 /* Í¼±ê×ÖÌå */
 HFONT iconFont_100 =NULL;
 

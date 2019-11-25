@@ -1015,15 +1015,14 @@ LRESULT	CListMenu::OnPaint(HWND hwnd)
     RECT rc;
 
     GetClientRect(hwnd, &rc);
-    hdc_mem = CreateMemoryDC(SURF_SCREEN, rc.w, rc.h);
-    DrawFrame(hdc_mem, hwnd);
-
+//    hdc_mem = CreateMemoryDC(SURF_SCREEN, rc.w, rc.h);
 
     hdc = BeginPaint(hwnd, &ps);
-    BitBlt(hdc, 0, 0, rc_main.w, rc_main.h, hdc_mem, 0, 0, SRCCOPY);
+    DrawFrame(hdc, hwnd);
+//    BitBlt(hdc, 0, 0, rc_main.w, rc_main.h, hdc_mem, 0, 0, SRCCOPY);
     EndPaint(hwnd, &ps);
 
-    DeleteDC(hdc_mem);
+//    DeleteDC(hdc_mem);
     return TRUE;
 }
 
@@ -1490,15 +1489,15 @@ LRESULT	CListMenu::OnTimer(HWND hwnd, int tmr_id)
 
                         if ((y - y_move_to) > 60)
                         {
-                            y = MIN(obj->rc.h >> 2, y - y_move_to);
+                            y = MIN(obj->rc.h >> 3, y - y_move_to);
                         }
                         else if ((y - y_move_to) > 20)
                         {
-                            y = MIN(obj->rc.h >> 3, y - y_move_to);
+                            y = MIN(obj->rc.h >> 4, y - y_move_to);
                         }
                         else
                         {
-                            y = MIN(1, y - y_move_to);
+                            y = MIN(10, y - y_move_to);
                         }
 
                         OffsetObjs(0, -y);
@@ -1509,15 +1508,15 @@ LRESULT	CListMenu::OnTimer(HWND hwnd, int tmr_id)
 
                         if ((y_move_to - y) > 60)
                         {
-                            y = MIN(obj->rc.h >> 2, y_move_to - y);
+                            y = MIN(obj->rc.h >> 3, y_move_to - y);
                         }
                         else if ((y_move_to - y) > 20)
                         {
-                            y = MIN(obj->rc.h >> 3, y_move_to - y);
+                            y = MIN(obj->rc.h >> 4, y_move_to - y);
                         }
                         else
                         {
-                            y = MIN(1, y_move_to - y);
+                            y = MIN(10, y_move_to - y);
                         }
                         OffsetObjs(0, y);
                         need_draw = TRUE;
@@ -1531,18 +1530,19 @@ LRESULT	CListMenu::OnTimer(HWND hwnd, int tmr_id)
                     {
 
                         //x =MIN(rc_list.w>>3,x-x_move_to);
-                        if ((x - x_move_to) > 60)
-                        {
-                            x = MIN(obj->rc.w >> 2, x - x_move_to);
-                        }
-                        else if ((x - x_move_to) > 20)
-                        {
-                            x = MIN(obj->rc.w >> 3, x - x_move_to);
-                        }
-                        else
-                        {
-                            x = MIN(3, x - x_move_to);
-                        }
+//                        if ((x - x_move_to) > 30)
+//                        {
+//                            x = MIN(obj->rc.w >> 1, x - x_move_to);
+//                        }
+//                        else if ((x - x_move_to) > 20)
+//                        {
+//                            x = MIN(obj->rc.w >> 2, x - x_move_to);
+//                        }
+//                        else
+//                        {
+//                            x = MIN(10, x - x_move_to);
+//                        }
+                        x = x - x_move_to;    // 一次到位
 
                         OffsetObjs(-x, 0);
                         need_draw = TRUE;
@@ -1550,18 +1550,19 @@ LRESULT	CListMenu::OnTimer(HWND hwnd, int tmr_id)
                     else if (x < x_move_to)
                     {
                         //x =MIN(rc_list.w>>3,x_move_to-x);
-                        if ((x_move_to - x) > 60)
-                        {
-                            x = MIN(obj->rc.w >> 2, x_move_to - x);
-                        }
-                        else if ((x_move_to - x) > 20)
-                        {
-                            x = MIN(obj->rc.w >> 3, x_move_to - x);
-                        }
-                        else
-                        {
-                            x = MIN(3, x_move_to - x);
-                        }
+//                        if ((x_move_to - x) > 30)
+//                        {
+//                            x = MIN(obj->rc.w >> 1, x_move_to - x);
+//                        }
+//                        else if ((x_move_to - x) > 20)
+//                        {
+//                            x = MIN(obj->rc.w >> 1, x_move_to - x);
+//                        }
+//                        else
+//                        {
+//                            x = MIN(10, x_move_to - x);
+//                        }
+                        x = x_move_to - x;    // 一次到位
                         OffsetObjs(x, 0);
                         need_draw = TRUE;
                     }

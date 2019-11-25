@@ -84,6 +84,7 @@
 "..\..\output\boot_logo.o"
 "..\..\output\gui_board_app_desktop.o"
 "..\..\output\clistmenu.o"
+"..\..\output\gui_demo_slidewindow.o"
 --library_type=microlib --strict --scatter "..\..\Output\Fire_FreeRTOS.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

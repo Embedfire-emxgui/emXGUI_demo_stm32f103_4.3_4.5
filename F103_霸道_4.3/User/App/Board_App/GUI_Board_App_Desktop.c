@@ -142,9 +142,7 @@ extern void	GUI_DEMO_Listbox_OwnerDraw(void);
 static struct __obj_list menu_list_1[] = {
       L"GUI应用",		 NULL,  	L"J", RGB_WHITE,		  	dummy,
       L"MP3播放器",	 NULL,	  L"I", RGB_WHITE,				(void(*)(void *))dummy,
-      L"视频播放器", NULL,	  L"D", RGB_WHITE,				(void(*)(void *))dummy,
       L"时钟",		   NULL,	  L"H", RGB_WHITE,				(void(*)(void *))dummy,
-      L"陀螺仪",	   NULL,	  L"R", RGB_WHITE,			  (void(*)(void *))dummy,
         
       L"LED&KEY",    NULL,	  L"j", RGB_WHITE,			  (void(*)(void *))dummy,
       L"模拟U盘",	   NULL,	  L"N", RGB_WHITE,				(void(*)(void *))dummy,
@@ -154,17 +152,14 @@ static struct __obj_list menu_list_1[] = {
       L"RGB彩灯",	   NULL,	  L"L", RGB_WHITE,				(void(*)(void *))dummy,
       L"摄像头",	   NULL,	  L"M", RGB_WHITE, 				(void(*)(void *))dummy,
  
-      L"图片浏览器", NULL,   	L"G", RGB_WHITE,				(void(*)(void *))dummy,
       L"温湿度",	   NULL,    L"O", RGB_WHITE,				(void(*)(void *))dummy,
-      L"电压表",	   NULL,	  L"W", RGB_WHITE,				(void(*)(void *))dummy,
+      L"电压表",	   NULL,	  L"W", RGB_WHITE,			 	(void(*)(void *))dummy,
       L"设置",	     NULL,	  L"h", RGB_WHITE,		  	(void(*)(void *))dummy,
 
       L"电话",	     NULL, 	  L"T", RGB_WHITE,				(void(*)(void *))dummy,
       L"短信",	     NULL,    L"U", RGB_WHITE,				(void(*)(void *))dummy,
-      L"二维码",	   NULL,	  L"V", RGB_WHITE,				(void(*)(void *))dummy,
 
       L"录音机",	   NULL,	  L"Y", RGB_WHITE,		  	(void(*)(void *))dummy,
-      L"基础控件",	 NULL,	  L"F", RGB_WHITE,		  	(void(*)(void *))dummy,
 //      L"游戏",	     NULL,	  L"S", RGB_WHITE,				(void(*)(void *))NES_Simulator,
 //      L"WiFi",       NULL,	  L"P", RGB_WHITE,				(void(*)(void *)),
       L"FlashWriter",NULL,	  L"b", RGB_WHITE,			  (void(*)(void *))GUI_RES_Writer_Dialog,
@@ -277,7 +272,7 @@ static	LRESULT	WinProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         CreateWindow(&wcex_ListMenu,
                                 L"ListMenu1",
                                 WS_VISIBLE | LMS_PAGEMOVE,
-                                rc.x + 60, rc.y + 20, rc.w - 120, rc.h - 10,
+                                rc.x + 60, rc.y + 20, rc.w - 120, rc.h - 20,
                                 hwnd,
                                 ID_LIST_1,
                                 NULL,
@@ -490,14 +485,14 @@ void	GUI_Board_App_Desktop(void *p)
     wcex.hCursor = NULL;//LoadCursor(NULL, IDC_ARROW);
 
     //创建主窗口
-    hwnd_home = CreateWindowEx(WS_EX_FRAMEBUFFER,
+    hwnd_home = CreateWindowEx(WS_EX_FRAMEBUFFER,//
         &wcex,
         L"IconViewer",
         //								/*WS_MEMSURFACE|*/WS_CAPTION|WS_DLGFRAME|WS_BORDER|WS_CLIPCHILDREN,
         /*WS_MEMSURFACE|*/WS_CLIPCHILDREN,
 
         0, 0, GUI_XSIZE, 400,
-        GetDesktopWindow(), NULL, NULL, NULL);
+        NULL, NULL, NULL, NULL);
 
     //显示主窗口
     ShowWindow(hwnd_home, SW_SHOW);

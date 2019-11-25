@@ -44,7 +44,7 @@
 #define	DMA2D_EN                   0
 
 /* 是否使用缓冲型控件，使用的话会增加一层液晶像素数据的消耗，显示效果减少闪烁*/
-#define  FRAME_BUFFER_EN            0
+#define  FRAME_BUFFER_EN            1
 
 /*==========输入设备配置===gui_input_port.c==================================================*/
 /* 是否使用输入设备 */
@@ -95,7 +95,7 @@
 /* 内存堆的基地址，可以为内部SRAM、外扩的SDRAM等 */  
 #define	VMEM_BASE	        (EXT_SRAM_BASE)
 /* 内存堆的总大小，单位为字节 */ 
-#define	VMEM_SIZE	        ((512*1024))
+#define	VMEM_SIZE	        ((1024*1024))
 /* 最小分配粒度，单位为字节*/  
 #define	VMEM_ALLOC_UNIT   (64)         //64字节   
 
@@ -140,14 +140,14 @@
   #define   GUI_CONTROL_FONT_64      CONTROL_60_8BPP
 #else
   /* LOGO使用的字体 */
-  #define  GUI_LOGO_FONT               "logo_icon_24_4BPP.xft"//"LOGO_50_4BPP.xft"
-  #define  GUI_LOGO_FONT_200          "logo_icon_200_200_4BPP.xft"
+  #define  GUI_LOGO_FONT             "LOGO_50_4BPP.xft"
+  #define  GUI_LOGO_FONT_200         "logo_icon_200_200_4BPP.xft"
   /* ICON使用的字体 */
   #define   GUI_ICON_FONT_50         "APP_ICON_50_4BPP.xft"
-  #define   GUI_ICON_FONT_100         "APP_ICON_100_100_4BPP.xft"
+  #define   GUI_ICON_FONT_100        "APP_ICON_100_100_4BPP.xft"
   /* 控制ICON使用的字体 */
   
-  #define   GUI_CONTROL_FONT_64      "CONTROL_ICON_64_4BPP.xft"
+  #define   GUI_CONTROL_FONT_64      "CONTROL_ICON_64_64_4BPP.xft"
   #define   GUI_CONTROL_FONT_24      "CONTROL_ICON_24_4BPP.xft"
   #define   GUI_CONTROL_FONT_32      "CONTROL_ICON_32_32_4BPP.xft"
   #define   GUI_CONTROL_FONT_48      "CONTROL_ICON_48_4BPP.xft"

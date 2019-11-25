@@ -68,3 +68,4 @@
 ..\..\output\gui_desktop.o: ..\..\User\bsp\FATFS\integer.h
 ..\..\output\gui_desktop.o: ..\..\User\bsp\FATFS\ffconf.h
 ..\..\output\gui_desktop.o: ..\..\..\emXGUI_Lib\inc\web_color.h
+..\..\output\gui_desktop.o: ..\..\..\emXGUI_Lib\app\base\GUI_AppDef.h

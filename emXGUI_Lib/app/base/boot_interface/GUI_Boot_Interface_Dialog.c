@@ -203,9 +203,9 @@ static	LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
   return	WM_NULL;                                     
 }
 
-extern void 	GUI_Board_App_Desktop(void);
+extern void 	GUI_Board_App_Desktop(void *param);
 extern void	GUI_RES_Writer_Dialog(void *param);
-extern void	GUI_DEMO_SlideWindow(void);
+extern void	GUI_DEMO_SlideWindow(void *param);
 
 void	GUI_Boot_Interface_Dialog(void *param)
 {
@@ -250,7 +250,7 @@ void	GUI_Boot_Interface_Dialog(void *param)
   wcex.hCursor		= NULL;//LoadCursor(NULL, IDC_ARROW);
 
   //创建启动提示
-  GUI_Boot_hwnd = CreateWindowEx(	WS_EX_LOCKPOS|WS_EX_FRAMEBUFFER,
+  GUI_Boot_hwnd = CreateWindowEx(	WS_EX_LOCKPOS,//|WS_EX_FRAMEBUFFER
                               &wcex,
                               L"Booting",
                               WS_VISIBLE|WS_CLIPCHILDREN|WS_OVERLAPPED,
@@ -280,7 +280,7 @@ void	GUI_Boot_Interface_Dialog(void *param)
         /* 若找不到资源，进入资源烧录应用 */      
         GUI_Thread_Create(GUI_RES_Writer_Dialog,  /* 任务入口函数 */
                               "GUI_FLASH_WRITER",/* 任务名字 */
-                              5*1024,  /* 任务栈大小 */
+                              3*1024,  /* 任务栈大小 */
                               NULL, /* 任务入口函数参数 */
                               5,    /* 任务的优先级 */
                               10); /* 任务时间片，部分任务不支持 */
@@ -290,12 +290,19 @@ void	GUI_Boot_Interface_Dialog(void *param)
 #endif     
 		 else
 		 {
-		         GUI_Thread_Create(GUI_Board_App_Desktop,     /* 任务入口函数 */
-                              "GUI_FLASH_WRITER",    /* 任务名字 */
-                              12*1024,               /* 任务栈大小 */
-                              NULL,                  /* 任务入口函数参数 */
-                              8,                     /* 任务的优先级 */
-                              10);                   /* 任务时间片，部分任务不支持 */
+		         GUI_Thread_Create(GUI_Board_App_Desktop, /* 任务入口函数 */
+                              "GUI_FLASH_WRITER",     /* 任务名字 */
+                              4*1024,                 /* 任务栈大小 */
+                              NULL,                   /* 任务入口函数参数 */
+                              8,                      /* 任务的优先级 */
+                              10);                    /* 任务时间片，部分任务不支持 */
+       
+             GUI_Thread_Create(GUI_DEMO_SlideWindow, /* 任务入口函数 */
+                              "GUI_DEMO_SlideWindow",     /* 任务名字 */
+                              2*1024,                 /* 任务栈大小 */
+                              NULL,                   /* 任务入口函数参数 */
+                              8,                      /* 任务的优先级 */
+                              10);                    /* 任务时间片，部分任务不支持 */
 
 		 }
 //     else

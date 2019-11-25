@@ -967,6 +967,11 @@
               <FileType>8</FileType>
               <FilePath>..\..\User\App\GUI_Demo\CListMenu.cpp</FilePath>
             </File>
+            <File>
+              <FileName>GUI_DEMO_SlideWindow.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\App\GUI_Demo\GUI_DEMO_SlideWindow.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

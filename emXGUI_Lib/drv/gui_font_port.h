@@ -23,6 +23,10 @@ typedef struct
 /* 字体参数配置 */
 extern const FONT_PARAM_TypeDef gui_font_param[];
 extern HFONT logoFont100;
+
+/* logo字体 */
+extern HFONT logoFont;
+
 /* 默认字体 */
 extern HFONT defaultFont;
 
