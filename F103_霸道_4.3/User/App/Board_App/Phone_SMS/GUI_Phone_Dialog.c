@@ -3,11 +3,10 @@
 #include <stdio.h>
 #include <math.h>
 #include "x_libc.h"
-#include <stdlib.h>
 #include "GUI_AppDef.h"
 #include "emXGUI_JPEG.h"
 #include "emxgui_png.h"
-#include "./sim900a/bsp_sim900a.h"
+#include "./Phone_SMS/sim900a/bsp_sim900a.h"
 
 /* 来电信号量 */
 GUI_SEM *Call_Sem;
@@ -91,14 +90,14 @@ static void Phone_ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
   SetBrushColor(hdc, MapRGB(hdc, 242, 242, 242));
   FillRect(hdc, &rc);
 
-  SetPenSize(hdc, 1);
+  SetPenSize(hdc, 2);
 
-  InflateRect(&rc, -8, -11);
+  InflateRect(&rc, -11, -23);
   
   for(int i=0; i<4; i++)
   {
-    HLine(hdc, rc.x, rc.y, rc.x + 21);
-    rc.y += 5;
+    HLine(hdc, rc.x, rc.y, 63);
+    rc.y += 9;
   }
 }
 
@@ -137,12 +136,16 @@ static void Phone_CircleButton_OwnerDraw(DRAWITEM_HDR *ds, COLOR_RGB32 bk_colous
 	SetBrushColor(hdc, MapRGB888(hdc, bk_colous));
 	FillCircle(hdc, rc.w / 2, rc.h / 2, rc.h / 2);
   
-  SetFont(hdc, controlFont_32);
+  HFONT controlFont_64;
+	
+  controlFont_64 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_64);
+  SetFont(hdc, controlFont_64);
 	GetWindowText(hwnd, wbuf, 128); //获得按钮控件的文字
   rc.x -= 2;
 	DrawText(hdc, wbuf, -1, &rc, DT_VCENTER | DT_CENTER);//绘制文字(居中对齐方式)
 
   SetFont(hdc, defaultFont);    // 恢复默认字体
+  DeleteFont(controlFont_64);
 }
 
 /*
@@ -177,12 +180,16 @@ static void Phone_DelButton_OwnerDraw(DRAWITEM_HDR *ds)
 	SetBrushColor(hdc, MapRGB(hdc, 242, 242, 242));
 	FillRect(hdc, &rc);
   
-  SetFont(hdc, controlFont_32);
+  HFONT controlFont_64;
+	
+  controlFont_64 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_64);
+  SetFont(hdc, controlFont_64);
 	GetWindowText(hwnd, wbuf, 128); //获得按钮控件的文字
   rc.y += 4;
 	DrawText(hdc, wbuf, -1, &rc, DT_VCENTER | DT_CENTER);//绘制文字(居中对齐方式)
 
   SetFont(hdc, defaultFont);    // 恢复默认字体
+  DeleteFont(controlFont_64);
 }
 
 /*
@@ -253,19 +260,19 @@ static LRESULT	DialWinProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
       if (CallInfo->Flag == 1)    // 拨号
       {
-        CreateWindow(BUTTON, L"N", WS_VISIBLE | WS_OWNERDRAW, 141, 152, 38, 38, hwnd, eID_Call_EXIT,   NULL, NULL);
+        CreateWindow(BUTTON, L"N", WS_VISIBLE | WS_OWNERDRAW, 370, 304, 75, 75, hwnd, eID_Call_EXIT,   NULL, NULL);
       }
       else if (CallInfo->Flag == 2)    // 来电
       {
-        CreateWindow(BUTTON, L"N", WS_OWNERDRAW, 141, 152, 38, 38, hwnd, eID_Call_EXIT1, NULL, NULL);
-        CreateWindow(BUTTON, L"N", WS_VISIBLE | WS_OWNERDRAW, 107, 152, 38, 38, hwnd, eID_Call_EXIT,   NULL, NULL);
-        CreateWindow(BUTTON, L"N", WS_VISIBLE | WS_OWNERDRAW, 183, 152, 38, 38, hwnd, eID_Call_ANSWER, NULL, NULL);
+        CreateWindow(BUTTON, L"N", WS_OWNERDRAW, 370, 304, 75, 75, hwnd, eID_Call_EXIT1, NULL, NULL);
+        CreateWindow(BUTTON, L"N", WS_VISIBLE | WS_OWNERDRAW, 268, 304, 75, 75, hwnd, eID_Call_EXIT,   NULL, NULL);
+        CreateWindow(BUTTON, L"N", WS_VISIBLE | WS_OWNERDRAW, 456, 304, 75, 75, hwnd, eID_Call_ANSWER, NULL, NULL);
         SetTimer(hwnd, 1, 300, TMR_START, NULL);    // 启动铃声定时器
       }
       
-      CreateWindow(TEXTBOX, CallInfo->Status, WS_VISIBLE | WS_OWNERDRAW, 115, 23, 91, 30, hwnd, eID_Call_STATUS, NULL, NULL);
-      CreateWindow(TEXTBOX, CallInfo->PhoneNum, WS_VISIBLE | WS_OWNERDRAW, 68, 61, 184, 26, hwnd, eID_Call_PHONENUM, NULL, NULL);
-      CreateWindow(TEXTBOX, L"00:00", WS_VISIBLE | WS_OWNERDRAW, 136, 87, 49, 26, hwnd, eID_Call_TIME, NULL, NULL);
+      CreateWindow(TEXTBOX, CallInfo->Status, WS_VISIBLE | WS_OWNERDRAW, 350, 54, 100, 30, hwnd, eID_Call_STATUS, NULL, NULL);
+      CreateWindow(TEXTBOX, CallInfo->PhoneNum, WS_VISIBLE | WS_OWNERDRAW, 300, 132, 201, 30, hwnd, eID_Call_PHONENUM, NULL, NULL);
+      CreateWindow(TEXTBOX, L"00:00", WS_VISIBLE | WS_OWNERDRAW, 346, 160, 108, 30, hwnd, eID_Call_TIME, NULL, NULL);
 
       SetTimer(hwnd, 0, 1000, TMR_START, NULL);
 
@@ -452,7 +459,7 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       }
       SIM900A_CLEAN_RX();//清除接收缓存
 
-      InflateRectEx(&rc, -2, -56, -2, -49);
+      InflateRectEx(&rc, -3, -112, -3, -101);
       MakeMatrixRect(m_rc, &rc, 0, 0, 3, 4);
 
       for(int i=0; i<NUM_BTN_COUNT; i++)
@@ -460,10 +467,10 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         CreateWindow(BUTTON, str_tbl[i], WS_VISIBLE,m_rc[i].x,m_rc[i].y,m_rc[i].w,m_rc[i].h,hwnd,id_tbl[i],NULL,NULL);
       }
 	    
-      CreateWindow(BUTTON, L"返回",	WS_VISIBLE|WS_OWNERDRAW, 35,  195, 38, 38, hwnd, eID_Phone_EXIT, NULL, NULL);
-      CreateWindow(BUTTON, L"N",	WS_VISIBLE|WS_OWNERDRAW, 141, 196, 38, 38, hwnd, eID_Phone_CONN, NULL, NULL);
-      CreateWindow(BUTTON, L"M",	WS_VISIBLE|WS_OWNERDRAW, 248, 195, 38, 38, hwnd, eID_Phone_DEL,  NULL, NULL);
-      CreateWindow(TEXTBOX, L"112", WS_VISIBLE|WS_OWNERDRAW, 2, 9, 317, 38, hwnd, eID_Phone_INNUM, NULL, NULL);
+      CreateWindow(BUTTON, L"返回",	WS_VISIBLE|WS_OWNERDRAW, 76,  391, 75, 75, hwnd, eID_Phone_EXIT, NULL, NULL);
+      CreateWindow(BUTTON, L"N",	WS_VISIBLE|WS_OWNERDRAW, 363, 391, 75, 75, hwnd, eID_Phone_CONN, NULL, NULL);
+      CreateWindow(BUTTON, L"M",	WS_VISIBLE|WS_OWNERDRAW, 651, 391, 75, 75, hwnd, eID_Phone_DEL,  NULL, NULL);
+      CreateWindow(TEXTBOX, L"112", WS_VISIBLE|WS_OWNERDRAW, 5, 18, 793, 75, hwnd, eID_Phone_INNUM, NULL, NULL);
       
       break;
     } 
@@ -482,14 +489,14 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         ops.Flag =MB_ICONERROR;
         ops.pButtonText =btn;
         ops.ButtonCount =2;
-        RC.w = 140;
-        RC.h = 100;
+        RC.w = 300;
+        RC.h = 200;
         RC.x = (GUI_XSIZE - RC.w) >> 1;
         RC.y = (GUI_YSIZE - RC.h) >> 1;
         SelectDialogBox(hwnd, RC, L"没有检测到GSM模块\n请重新检查连接。", L"错误", &ops);    // 显示错误提示框
         PostCloseMessage(hwnd);                                                              // 发送关闭窗口的消息
       }
-      else if(tmr_id == 1)    // 定时检查来电情况
+      else if(tmr_id == 1)    // 放在任务里跑了
       {
         char num[20]={0};
         
@@ -660,7 +667,7 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					}
 					break;
 
-					/* 退格按钮按下 */
+					/* 数子按钮按下 */
 					case	L'0':
 					case	L'1':
 					case	L'2':
@@ -720,7 +727,7 @@ void GUI_Phone_Dialog(void)
 	
 	WNDCLASS	wcex;
 	MSG msg;
-  HWND hwnd;
+  HWND MAIN_Handle;
 	wcex.Tag = WNDCLASS_TAG;
 
 	wcex.Style = CS_HREDRAW | CS_VREDRAW;
@@ -732,23 +739,23 @@ void GUI_Phone_Dialog(void)
 	wcex.hCursor = NULL;//LoadCursor(NULL, IDC_ARROW);
    
 	//创建主窗口
-	hwnd = CreateWindowEx(WS_EX_NOFOCUS|WS_EX_FRAMEBUFFER,
+	MAIN_Handle = CreateWindowEx(WS_EX_NOFOCUS|WS_EX_FRAMEBUFFER,
                               &wcex,
                               L"GUI Phone Dialog",
                               WS_VISIBLE|WS_CLIPCHILDREN,
                               0, 0, GUI_XSIZE, GUI_YSIZE,
                               NULL, NULL, NULL, NULL);
    //显示主窗口
-	ShowWindow(hwnd, SW_SHOW);
+	ShowWindow(MAIN_Handle, SW_SHOW);
 	//开始窗口消息循环(窗口关闭并销毁时,GetMessage将返回FALSE,退出本消息循环)。
-	while (GetMessage(&msg, hwnd))
+	while (GetMessage(&msg, MAIN_Handle))
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}  
 }
 
-#if 0    // 内存有限，不单独建立一个任务放在后台跑
+#if 0
 /*
  * @brief  来电显示窗口
  * @param  num[]:来电电话号码
@@ -759,7 +766,7 @@ void GUI_PhoneCall_Dialog(char num[])
 
   CallFlag = 1;     // 标记来电
   WNDCLASS wcex;
-  RECT rc;
+//  RECT rc;
   CallInfo_t CallInfo;
   WCHAR buf[128];
 
@@ -771,7 +778,7 @@ void GUI_PhoneCall_Dialog(char num[])
   x_wstrcpy(CallInfo.Status, L"来电提醒");
 	
 	MSG msg;
-  HWND hwnd;
+  HWND MAIN_Handle;
 	wcex.Tag = WNDCLASS_TAG;
 
 	wcex.Style = CS_HREDRAW | CS_VREDRAW;
@@ -783,16 +790,16 @@ void GUI_PhoneCall_Dialog(char num[])
 	wcex.hCursor = NULL;//LoadCursor(NULL, IDC_ARROW);
    
 	//创建主窗口
-	hwnd = CreateWindowEx(WS_EX_NOFOCUS|WS_EX_FRAMEBUFFER,
+	MAIN_Handle = CreateWindowEx(WS_EX_NOFOCUS|WS_EX_FRAMEBUFFER,
                               &wcex,
                               L"GUI PhoneCall Dialog",
                               WS_VISIBLE|WS_CLIPCHILDREN,
                               0, 0, GUI_XSIZE, GUI_YSIZE,
                               NULL, NULL, NULL, &CallInfo);
    //显示主窗口
-	ShowWindow(hwnd, SW_SHOW);
+	ShowWindow(MAIN_Handle, SW_SHOW);
 	//开始窗口消息循环(窗口关闭并销毁时,GetMessage将返回FALSE,退出本消息循环)。
-	while (GetMessage(&msg, hwnd))
+	while (GetMessage(&msg, MAIN_Handle))
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
@@ -809,7 +816,8 @@ void PhoneCallMonitorTask(void *p)
   char num[20]={0};
 
   Call_Sem = GUI_SemCreate(0, 1);    // 创建一个二值信号量
-  
+  BEEP_GPIO_Config();                // 初始化蜂鸣器
+
   /* 初始化 GSM 模块 */
   if(sim900a_init() != SIM900A_TRUE)           // 初始化串口并检测 GSM 模块
   {  

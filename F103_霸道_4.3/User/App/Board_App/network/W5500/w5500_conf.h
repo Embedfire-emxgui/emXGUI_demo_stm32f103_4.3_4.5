@@ -48,8 +48,8 @@ extern uint8  	use_eeprom;																/*是否使用EEPROM中的IP配置信息*/
 
 #define FW_VER_HIGH  						1               
 #define FW_VER_LOW    					0
-#define ON	                 		1
-#define OFF	                 		0
+//#define ON	                 		1
+//#define OFF	                 		0
 #define HIGH	           	 			1
 #define LOW		             			0
 

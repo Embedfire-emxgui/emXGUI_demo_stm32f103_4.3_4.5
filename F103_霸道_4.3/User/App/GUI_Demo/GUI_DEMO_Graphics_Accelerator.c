@@ -21,23 +21,23 @@ extern const char ASCII_24_4BPP[];
 extern const char ASCII_32_4BPP[];
 extern const char ASCII_40_4BPP[];
 #else
-extern const char ASCII_16_4BPP[];
-#define ASCII_32_4BPP "ASCII_32_4BPP.xft"
+
+#define ASCII_32_4BPP "ASCII_40_4BPP.xft"
 #define ASCII_40_4BPP "ASCII_40_4BPP.xft"
 
 #endif
 
 /*============================================================================*/
-#define	MEMDC_W	230  //MEMDC宽度.
-#define	MEMDC_H 220  //MEMDC高度.
+#define	MEMDC_W	580  //MEMDC宽度.
+#define	MEMDC_H 440  //MEMDC高度.
 #define	BGCOLOR	RGB888(0,0,0)  //背景色(RGB888).
 
 
 #define OBJNUM     10 //显示的对象数量.
 #define	SPEED_MIN	2 //移动速度最小值.
 #define	SPEED_MAX	6 //移动速度最大值.
-#define RECT_SIZE_MIN 30
-#define RECT_SIZE_MAX 80
+#define RECT_SIZE_MIN 80
+#define RECT_SIZE_MAX 150
 
 //定义控件ID
 enum	eID{
@@ -71,8 +71,8 @@ static 	s8		ObjSpeedX[OBJNUM];
 static 	s8		ObjSpeedY[OBJNUM];
 
 static HDC hdc_mem=NULL;
-static HDC hdc_bk=NULL;
-static BITMAP bm1,bm2,bm3;
+//static HDC hdc_bk=NULL;
+static BITMAP bm1,bm2,bm3,bm4;
 static HFONT GA_hFont24=NULL;
 static HFONT GA_hFont32=NULL;
 static HFONT GA_hFont40=NULL;
@@ -83,6 +83,7 @@ static int type_id=0;
 static  HDC blue_fish_hdc;
 static  HDC red_fish_hdc;
 static  HDC crocodile_hdc;
+static  HDC Okami_hdc;
 
 extern const char ASCII_24_4BPP[];
 
@@ -95,18 +96,20 @@ static  HFONT *FontTbl[4]={
 
 };
 
-static  BITMAP *BitmapTbl[4]={
+static  BITMAP *BitmapTbl[5]={
 
 		&bm1,
 		&bm2,
 		&bm3,
+    &bm4,
 		&bm1,
 };
 
 /*============================================================================*/
 #define BLUE_FISH_PIC "blue_fish_ARGB8888.bmp"
-#define RED_FISH_PIC "red_fish_ARGB8888.bmp"
+#define RED_FISH_PIC  "red_fish_ARGB8888.bmp"
 #define CROCODILE_PIC "crocodile_ARGB8888.bmp"
+#define Okami_PIC     "Okami.bmp"
 
 static void BitmapInit(void)
 {
@@ -134,7 +137,7 @@ static void BitmapInit(void)
 #else
 
   /* 创建蓝鱼的memdc */
-  blue_fish_hdc = CreateMemoryDC(COLOR_FORMAT_ARGB8888,92,184); 
+  blue_fish_hdc = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888,92,184); 
   /* 清空背景为透明 */
   ClrDisplay(blue_fish_hdc,NULL,0);
   /* 绘制bmp到hdc */
@@ -142,71 +145,77 @@ static void BitmapInit(void)
   /* 转换成bitmap */
   DCtoBitmap(blue_fish_hdc,&bm1);
   
-  red_fish_hdc = CreateMemoryDC(COLOR_FORMAT_ARGB8888,92,92);
+  red_fish_hdc = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888,92,92);
   ClrDisplay(red_fish_hdc,NULL,0);  
   PIC_BMP_Draw_Res(red_fish_hdc,0,0,RED_FISH_PIC, NULL);
   DCtoBitmap(red_fish_hdc,&bm2);
-  
-  crocodile_hdc = CreateMemoryDC(COLOR_FORMAT_ARGB8888,130,260);  
+
+#if 1
+  crocodile_hdc = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888,130,260);  
   ClrDisplay(crocodile_hdc,NULL,0);
   PIC_BMP_Draw_Res(crocodile_hdc,0,0,CROCODILE_PIC, NULL);
   DCtoBitmap(crocodile_hdc,&bm3);
+#else
+  crocodile_hdc = CreateMemoryDC(COLOR_FORMAT_RGB565,130,130);  
+  ClrDisplay(crocodile_hdc,NULL,250);
+  PIC_BMP_Draw_Res(crocodile_hdc,0,0,Okami_PIC, NULL);
+  DCtoBitmap(crocodile_hdc,&bm3);
+#endif
+  Okami_hdc = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888,130,130);  
+  ClrDisplay(Okami_hdc,NULL,0);
+  PIC_BMP_Draw_Res(Okami_hdc,0,0,Okami_PIC, NULL);
+  DCtoBitmap(Okami_hdc,&bm4);
   
 #endif
 }
 static void exit_owner_draw(DRAWITEM_HDR *ds) //绘制一个按钮外观
-{
+{  
   HDC hdc;
-  RECT rc, rc_tmp;
-  HWND hwnd;
+  RECT rc;
 
 	hdc = ds->hDC;   
 	rc = ds->rc; 
-  hwnd = ds->hwnd;
-
-  GetClientRect(hwnd, &rc_tmp);//得到控件的位置
-  WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
-
-  BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_bk, rc_tmp.x, rc_tmp.y, SRCCOPY);
 
   if (ds->State & BST_PUSHED)
 	{ //按钮是按下状态
-		SetPenColor(hdc, MapRGB(hdc, 120, 120, 120));      //设置文字色
+		SetPenColor(hdc, MapRGB(hdc, 1, 191, 255));
 	}
 	else
 	{ //按钮是弹起状态
-		SetPenColor(hdc, MapRGB(hdc, 250, 250, 250));
+
+		SetPenColor(hdc, MapRGB(hdc, 250, 250, 250));      //设置画笔色
 	}
+
+  SetPenSize(hdc, 2);
+
+  InflateRect(&rc, 0, -1);
   
   for(int i=0; i<4; i++)
   {
     HLine(hdc, rc.x, rc.y, rc.w);
-    rc.y += 5;
+    rc.y += 9;
   }
 }
+
 static void GA_BUTTON_OwnerDraw(DRAWITEM_HDR *ds) //绘制一个按钮外观
 {
 	HWND hwnd;
-	HDC hdc,hdc_mem;
-	RECT rc, rc_tmp;
+	HDC hdc;
+	RECT rc;
 	WCHAR wbuf[128];
-  
   
 	hwnd = ds->hwnd; //button的窗口句柄.
 	hdc = ds->hDC;   //button的绘图上下文句柄.
-  
-  
-  
-  GetClientRect(hwnd, &rc_tmp);//得到控件的位置
-  GetClientRect(hwnd, &rc);//得到控件的位置
-  hdc_mem = CreateMemoryDC(SURF_SCREEN, rc.w, rc.h);
-  WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
 
-  BitBlt(hdc_mem, rc.x, rc.y, rc.w, rc.h, hdc_bk, rc_tmp.x, rc_tmp.y, SRCCOPY);
+  GetClientRect(hwnd, &rc);//得到控件的位置
+
+  SetBrushColor(hdc,MapRGB888(hdc,BGCOLOR));
+  FillRect(hdc,&rc);
+  
   if(ds->ID == ID_ART_ACTIVE)
-    SetTextColor(hdc_mem, MapRGB(hdc_mem, 0, 255, 0));
+    SetTextColor(hdc, MapRGB(hdc, 0, 255, 0));
   else
-    SetTextColor(hdc_mem, MapRGB(hdc_mem, 255, 255, 255));
+    SetTextColor(hdc, MapRGB(hdc, 255, 255, 255));
 	
 
 	  /* 使用控制图标字体 */
@@ -215,11 +224,7 @@ static void GA_BUTTON_OwnerDraw(DRAWITEM_HDR *ds) //绘制一个按钮外观
 
 	GetWindowText(hwnd, wbuf, 128); //获得按钮控件的文字
 
-	DrawText(hdc_mem, wbuf, -1, &rc, DT_VCENTER);//绘制文字(居中对齐方式)
-
-  BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_mem, rc.x, rc.y, SRCCOPY);
-  DeleteDC(hdc_mem);
-
+	DrawText(hdc, wbuf, -1, &rc, DT_VCENTER);//绘制文字(居中对齐方式)
 }
 static void DrawHandler(HDC hdc,int Width,int Height)
 {
@@ -331,7 +336,7 @@ static void DrawHandler(HDC hdc,int Width,int Height)
                 case 2:
                   ObjType[i] =4;
                   break;
-
+                
                 default:
                   ObjType[i] = (rand_val>>2)%8;
                   break;
@@ -365,7 +370,7 @@ static void DrawHandler(HDC hdc,int Width,int Height)
     
       SetFont(hdc, defaultFont);
       SetTextColor(hdc,MapRGB(hdc,255,255,255)); 
-    	TextOut(hdc,rc.x+5,rc.h-18,L"刷图区分辨率：230x220",-1); 
+    	TextOut(hdc,rc.x+10,rc.h-30,L"刷图区分辨率：580x440",-1); 
 }
 
 
@@ -387,7 +392,7 @@ static LRESULT	WinProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 
 			BitmapInit(); //初始化位图数据
 #if 1
-			GA_hFont24 =XFT_CreateFont(ASCII_16_4BPP);
+			GA_hFont24 =XFT_CreateFont(ASCII_24_4BPP);
 			GA_hFont32 =XFT_CreateFont(ASCII_32_4BPP);
 			GA_hFont40 =XFT_CreateFont(ASCII_40_4BPP);
 #else
@@ -427,24 +432,23 @@ static LRESULT	WinProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 			t0 =GUI_GetTickCount();
 			hdc_mem =CreateMemoryDC(SURF_SCREEN,MEMDC_W,MEMDC_H);
 
-			rc.w =60;//50;
-			rc.h =25;//25;
+			rc.w =130;
+			rc.h =50;
 			rc.x = MEMDC_W + (rc0.w - MEMDC_W - rc.w)/2;
-			rc.y =45;//20;
+			rc.y =50;
    
       
 //      hdc =BeginPaint(hwnd,&ps);
 
       /* Home按钮 */    
-			wnd=CreateWindow(BUTTON,L"O",	WS_TRANSPARENT|WS_OWNERDRAW|WS_VISIBLE,286, 10, 23, 23,hwnd,ID_EXIT,NULL,NULL); //创建一个按钮.
-			SetWindowFont(wnd,controlFont_24); //设置控件窗口字体.
+			wnd=CreateWindow(BUTTON,L"O",	WS_TRANSPARENT|WS_OWNERDRAW|WS_VISIBLE, 740, 17, 36, 36,hwnd,ID_EXIT,NULL,NULL); //创建一个按钮.
 
 //      SetFont(hdc, defaultFont);
 //      SetTextColor(hdc,MapRGB(hdc,255,255,255)); 
 
 //			OffsetRect(&rc,0,rc.h+10);
 //			TextOut(hdc,rc.x,rc.y,L"帧率",-1); 
-      wnd=CreateWindow(BUTTON,L"帧率",TBS_FLAT|WS_TRANSPARENT|WS_OWNERDRAW|WS_VISIBLE,rc.x,rc.y,rc.w-20,rc.h,hwnd,ID_INFO,NULL,NULL); //创建一个文字框.
+      wnd=CreateWindow(BUTTON,L"帧率",TBS_FLAT|WS_TRANSPARENT|WS_OWNERDRAW|WS_VISIBLE,rc.x,rc.y,rc.w-40,rc.h,hwnd,ID_INFO,NULL,NULL); //创建一个文字框.
 			SetWindowFont(wnd,defaultFont); //设置控件窗口字体.
 
 
@@ -470,25 +474,25 @@ static LRESULT	WinProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 			wnd=CreateWindow(BUTTON,L"下一种",BS_FLAT|BS_NOTIFY|WS_VISIBLE,rc.x,rc.y,rc.w,rc.h,hwnd,ID_NEXT,NULL,NULL);
 			SetWindowFont(wnd,defaultFont); //设置控件窗口字体.
 
-//			OffsetRect(&rc,0,rc.h+5);
-////			TextOut(hdc,rc.x,rc.y,L"Chrome加速器",-1); 
-//      wnd=CreateWindow(BUTTON,L"Chrom加速器",TBS_FLAT|WS_TRANSPARENT|WS_OWNERDRAW|WS_VISIBLE,rc.x,rc.y,rc.w+40,rc.h,hwnd,ID_INFO,NULL,NULL); //创建一个文字框.
-//			SetWindowFont(wnd,defaultFont); //设置控件窗口字体.
-//      
-//			OffsetRect(&rc,0,rc.h);
-//			wnd=CreateWindow(BUTTON,L"开启/关闭",BS_FLAT|BS_NOTIFY|WS_VISIBLE,rc.x,rc.y,rc.w,rc.h,hwnd,ID_DMA2D_EN,NULL,NULL);
-//			SetWindowFont(wnd,defaultFont); //设置控件窗口字体.
+			OffsetRect(&rc,0,rc.h+5);
+//			TextOut(hdc,rc.x,rc.y,L"Chrome加速器",-1); 
+      wnd=CreateWindow(BUTTON,L"Chrom加速器",TBS_FLAT|WS_TRANSPARENT|WS_OWNERDRAW|WS_VISIBLE,rc.x,rc.y,rc.w+40,rc.h,hwnd,ID_INFO,NULL,NULL); //创建一个文字框.
+			SetWindowFont(wnd,defaultFont); //设置控件窗口字体.
+      
+			OffsetRect(&rc,0,rc.h);
+			wnd=CreateWindow(BUTTON,L"开启/关闭",BS_FLAT|BS_NOTIFY|WS_VISIBLE,rc.x,rc.y,rc.w,rc.h,hwnd,ID_DMA2D_EN,NULL,NULL);
+			SetWindowFont(wnd,defaultFont); //设置控件窗口字体.
 
 
-			wnd=CreateWindow(BUTTON,L"随机图案",TBS_FLAT|WS_OWNERDRAW|WS_TRANSPARENT|WS_VISIBLE,0,0,100,20,hwnd,ID_TITLE,NULL,NULL); //创建一个文字框.
+			wnd=CreateWindow(BUTTON,L"随机图案",TBS_FLAT|WS_OWNERDRAW|WS_TRANSPARENT|WS_VISIBLE,0,0,100,35,hwnd,ID_TITLE,NULL,NULL); //创建一个文字框.
 			SetWindowFont(wnd,defaultFont); //设置控件窗口字体.
       
       /* Chrom-ART 激活 */      
-//      wnd=CreateWindow(BUTTON,L"Chrom-ART 激活",TBS_FLAT|WS_OWNERDRAW|WS_TRANSPARENT|WS_VISIBLE,140,0,100,20,hwnd,ID_ART_ACTIVE,NULL,NULL); //创建一个文字框.
-//      SetWindowFont(wnd,defaultFont); //设置控件窗口字体.
+      wnd=CreateWindow(BUTTON,L"Chrom-ART 激活",TBS_FLAT|WS_OWNERDRAW|WS_TRANSPARENT|WS_VISIBLE,400,0,200,35,hwnd,ID_ART_ACTIVE,NULL,NULL); //创建一个文字框.
+      SetWindowFont(wnd,defaultFont); //设置控件窗口字体.
       g_dma2d_en = TRUE;
 //			EndPaint(hwnd,&ps);
-      hdc_bk = CreateMemoryDC(SURF_SCREEN, GUI_XSIZE, GUI_YSIZE);
+//      hdc_bk = CreateMemoryDC(SURF_SCREEN, 800, 480);
       
 		}
 		return TRUE;
@@ -550,28 +554,28 @@ static LRESULT	WinProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 				}
 			}
       
-//      if(id == ID_DMA2D_EN)
-//      {
-//        if(code == BN_CLICKED)
-//				{
-//          g_dma2d_en =!g_dma2d_en;
-//          
-//          if(g_dma2d_en)
-//          {
-//            wnd =GetDlgItem(hwnd,ID_ART_ACTIVE);
-//            SetWindowText(wnd,L"Chrom-ART 激活");
+      if(id == ID_DMA2D_EN)
+      {
+        if(code == BN_CLICKED)
+				{
+          g_dma2d_en =!g_dma2d_en;
+          
+          if(g_dma2d_en)
+          {
+            wnd =GetDlgItem(hwnd,ID_ART_ACTIVE);
+            SetWindowText(wnd,L"Chrom-ART 激活");
 
-////            ShowWindow(GetDlgItem(hwnd, ID_ART_ACTIVE), SW_SHOW);
-//          }
-//          else
-//          {
-//            wnd =GetDlgItem(hwnd,ID_ART_ACTIVE);
-//            SetWindowText(wnd,L"");
+//            ShowWindow(GetDlgItem(hwnd, ID_ART_ACTIVE), SW_SHOW);
+          }
+          else
+          {
+            wnd =GetDlgItem(hwnd,ID_ART_ACTIVE);
+            SetWindowText(wnd,L"");
 
-////            ShowWindow(GetDlgItem(hwnd, ID_ART_ACTIVE), SW_HIDE);
-//          }
-//        }
-//      }
+//            ShowWindow(GetDlgItem(hwnd, ID_ART_ACTIVE), SW_HIDE);
+          }
+        }
+      }
 
 			if(id==ID_EXIT && code==BN_CLICKED) // 按钮“单击”了.
 			{
@@ -587,9 +591,8 @@ static LRESULT	WinProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 			RECT rc =*(RECT*)lParam;;
 
 			GetClientRect(hwnd,&rc);
-			SetBrushColor(hdc_bk,MapRGB888(hdc_bk,BGCOLOR));
-			FillRect(hdc_bk,&rc);
-      BitBlt(hdc, 0,0,GUI_XSIZE,GUI_YSIZE,hdc_bk,0,0,SRCCOPY);
+			SetBrushColor(hdc,MapRGB888(hdc,BGCOLOR));
+			FillRect(hdc,&rc);
 			return TRUE;
 		}
 //		break;
@@ -721,7 +724,7 @@ static LRESULT	WinProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 				x_wsprintf(wbuf,L"%d FPS",fps);
 				SetWindowText(wnd,wbuf);
         
-//        cpu_usage_get(&cpu_load_major);
+//        cpu_usage_get((char *)&cpu_load_major);
 
         wnd =GetDlgItem(hwnd,ID_CPU_LOAD);
         if(cpu_load_major != 0)
@@ -758,7 +761,7 @@ static LRESULT	WinProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 			////用户的绘制内容...
 			DrawHandler(hdc_mem,MEMDC_W,MEMDC_H);
 
-			BitBlt(hdc,0,22,MEMDC_W,MEMDC_H,hdc_mem,0,0,SRCCOPY);
+			BitBlt(hdc,0,40,MEMDC_W,MEMDC_H,hdc_mem,0,0,SRCCOPY);
       
 			EndPaint(hwnd,&ps); //结束绘图
 
@@ -776,7 +779,8 @@ static LRESULT	WinProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
       DeleteDC(blue_fish_hdc);
       DeleteDC(red_fish_hdc);
       DeleteDC(crocodile_hdc);
-      DeleteDC(hdc_bk);
+      DeleteDC(Okami_hdc);
+
       if(GA_hFont24 != defaultFont)
         DeleteFont(GA_hFont24);
       if(GA_hFont32 != defaultFont)
@@ -811,7 +815,7 @@ void	GUI_DEMO_Graphics_Accelerator(void)
 	MSG msg;
 
 	/////
-//  GUI_DEBUG("Enter");
+  GUI_DEBUG("Enter");
 	wcex.Tag 		    = WNDCLASS_TAG;
 
 	wcex.Style			= CS_HREDRAW | CS_VREDRAW;
@@ -823,7 +827,7 @@ void	GUI_DEMO_Graphics_Accelerator(void)
 	wcex.hCursor		= NULL;
 
 	//创建主窗口
-	hwnd	=CreateWindowEx(	WS_EX_LOCKPOS|WS_EX_NOFOCUS|WS_EX_FRAMEBUFFER,
+	hwnd	=CreateWindowEx(	WS_EX_LOCKPOS|WS_EX_NOFOCUS,
                             &wcex,
                             L"GUI_DEMO: MEMDC Blt", //窗口名称
                             WS_VISIBLE|WS_CLIPCHILDREN,

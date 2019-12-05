@@ -3,6 +3,7 @@
 
 #include "stm32f10x.h"
 #include <stdio.h>
+#include "GUI_AppDef.h"
 
 //#include "diskio.h"
 //#include "integer.h"

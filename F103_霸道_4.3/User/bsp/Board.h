@@ -34,6 +34,12 @@ extern "C"{
 //#include "drv_inc/adc_drv.h"
 #include "spi_flash/bsp_flash_spi.h"
 #include "./led/bsp_led.h" 
+#include "./beep/bsp_beep.h"   
+#include "./dwt_delay/core_delay.h"   
+#include  "./mp3_player/vs1053/VS1053.h"
+#include "./camera/ov7725/bsp_ov7725.h"
+#include "./camera/ov7725/bsp_sccb.h"
+#include "./clock/rtc/bsp_rtc.h"
 
 //#include "Common/drv_inc/my_iic.h"
 //#include "Common/drv_inc/my_uart.h"

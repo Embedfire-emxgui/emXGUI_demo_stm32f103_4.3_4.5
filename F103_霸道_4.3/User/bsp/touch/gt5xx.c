@@ -17,7 +17,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "./touch/gt9xx.h"
+#include "./touch/gt5xx.h"
 #include "./touch/bsp_i2c_touch.h"
 #include "gui_drv_cfg.h"
 
@@ -52,53 +52,6 @@ const uint8_t CTP_CFG_GT5688[] =  {
 			0x50,0x3C,0x50,0x00,0x00,0x00,0x1A,0x64,0x01
 
 };
-
-// GT9147驱动配置
-// 第一个字节为版本号(0X60),必须保证新的版本号大于等于GT9147内部
-// flash原有版本号,才会更新配置.
-const u8 CTP_CFG_GT9147[]=
-{
-//  0x99,0xE0,0x01,0x20,0x03,0x05,0x34,0x00,0x02,
-//  0x08,0x1E,0x08,0x50,0x3C,0x0F,0x05,0x00,0x00,
-//  0xFF,0x67,0x02,0x02,0x00,0x18,0x1A,0x1E,0x14,
-//  0x88,0x28,0x0A,0x55,0x57,0xD3,0x07,0x03,0x00,
-//  0x00,0x42,0x32,0x1D,0x00,0x00,0x00,0x00,0x00,
-//  0x00,0x00,0x32,0x00,0x00,0x2A,0x4B,0x78,0x94,
-//  0xD5,0x02,0x07,0x00,0x00,0x04,0x88,0x4E,0x00,
-//  0x7E,0x56,0x00,0x76,0x5E,0x00,0x6E,0x68,0x00,
-//  0x67,0x72,0x00,0x67,0x00,0x00,0x00,0x00,0x00,
-//  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-//  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-//  0x0F,0x0F,0x03,0x06,0x10,0x42,0xF8,0x0F,0x14,
-//  0x00,0x00,0x00,0x00,0x1A,0x18,0x16,0x14,0x12,
-//  0x10,0x0E,0x0C,0x0A,0x08,0x00,0x00,0x00,0x00,
-//  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-//  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,
-//  0x04,0x05,0x06,0x08,0x0A,0x0C,0x1D,0x1E,0x1F,
-//  0x20,0x22,0x24,0x28,0x29,0xFF,0xFF,0x00,0x00,
-//  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-//  0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-//  0xFF,0xFF,0xFF,0xFF,0x37,0x01
-	0x82,0XE0,0X01,0X20,0X03,0X05,0X35,0X00,0X02,0X08,
-	0X1E,0X08,0X50,0X3C,0X0F,0X05,0X00,0X00,0XFF,0X67,
-	0X50,0X00,0X00,0X18,0X1A,0X1E,0X14,0X89,0X28,0X0A,
-	0X30,0X2E,0XBB,0X0A,0X03,0X00,0X00,0X02,0X33,0X1D,
-	0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X32,0X00,0X00,
-	0X2A,0X1C,0X5A,0X94,0XC5,0X02,0X07,0X00,0X00,0X00,
-	0XB5,0X1F,0X00,0X90,0X28,0X00,0X77,0X32,0X00,0X62,
-	0X3F,0X00,0X52,0X50,0X00,0X52,0X00,0X00,0X00,0X00,
-	0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,
-	0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X0F,
-	0X0F,0X03,0X06,0X10,0X42,0XF8,0X0F,0X14,0X00,0X00,
-	0X00,0X00,0X1A,0X18,0X16,0X14,0X12,0X10,0X0E,0X0C,
-	0X0A,0X08,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,
-	0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,
-	0X00,0X00,0X29,0X28,0X24,0X22,0X20,0X1F,0X1E,0X1D,
-	0X0E,0X0C,0X0A,0X08,0X06,0X05,0X04,0X02,0X00,0XFF,
-	0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,
-	0X00,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,
-	0XFF,0XFF,0XFF,0XFF,
-};  
 
 
 //uint8_t config[GTP_CONFIG_MAX_LENGTH + GTP_ADDR_LENGTH]
@@ -703,21 +656,21 @@ Output:
 	
     I2C_Touch_Init();
 
-//    ret = GTP_I2C_Test();
-//    if (ret < 0)
-//    {
-//        GTP_ERROR("I2C communication ERROR!");
-//				return ret;
-//    } 
+    ret = GTP_I2C_Test();
+    if (ret < 0)
+    {
+        GTP_ERROR("I2C communication ERROR!");
+				return ret;
+    } 
 		
 		//获取触摸IC的型号
     GTP_Read_Version(); 
 		
 		//根据IC的型号指向不同的配置
-    	if(touchIC == GT9147)
+    	if(touchIC == GT5688)
 		{
-			cfg_info =  CTP_CFG_GT9147; //指向寄存器配置
-			cfg_info_len = CFG_GROUP_LEN(CTP_CFG_GT9147);//计算配置表的大小
+			cfg_info =  CTP_CFG_GT5688; //指向寄存器配置
+			cfg_info_len = CFG_GROUP_LEN(CTP_CFG_GT5688);//计算配置表的大小
 		}
 		
     memset(&config[GTP_ADDR_LENGTH], 0, GTP_CONFIG_MAX_LENGTH);
@@ -752,17 +705,18 @@ Output:
 #endif
     //计算要写入checksum寄存器的值
     check_sum = 0;
-    
-    for (i = GTP_ADDR_LENGTH; i < (cfg_num+GTP_ADDR_LENGTH); i++) 
+		
+		for (i = GTP_ADDR_LENGTH; i < (cfg_num+GTP_ADDR_LENGTH -3); i += 2) 
 		{
-			check_sum += config[i];
+			check_sum += (config[i] << 8) + config[i + 1];
 		}
 		
-		check_sum = (~check_sum) + 1;
+		check_sum = 0 - check_sum;
 		GTP_DEBUG("Config checksum: 0x%04X", check_sum);
 		//更新checksum
-		config[(cfg_num+GTP_ADDR_LENGTH +0)] = check_sum;
-		config[(cfg_num+GTP_ADDR_LENGTH +1)] = 0x01;
+		config[(cfg_num+GTP_ADDR_LENGTH -3)] = (check_sum >> 8) & 0xFF;
+		config[(cfg_num+GTP_ADDR_LENGTH -2)] = check_sum & 0xFF;
+		config[(cfg_num+GTP_ADDR_LENGTH -1)] = 0x01;
 		
 
     //写入配置信息
@@ -778,7 +732,7 @@ Output:
 		
 
 		
-#if 1	//读出写入的数据，检查是否正常写入
+#if 0	//读出写入的数据，检查是否正常写入
     //检验读出的数据与写入的是否相同
 	{
     	    uint16_t i;
@@ -864,17 +818,9 @@ int32_t GTP_Read_Version(void)
 				if(buf[2] == '9' && buf[3] == '1' && buf[4] == '1')
 					touchIC = GT911;
     }
-    else if (buf[4] == '4')
-    {
-        GTP_INFO("IC3 Version: %c%c%c%c_%02x%02x", buf[2], buf[3], buf[4], buf[5], buf[7], buf[6]);
-				
-				//GT9157芯片
-				if(buf[2] == '9' && buf[3] == '1' && buf[4] == '4' && buf[5] == '7')
-					touchIC = GT9147;
-		}
     else
     {
-        GTP_INFO("IC4 Version: %c%c%c%c_%02x%02x", buf[2], buf[3], buf[4], buf[5], buf[7], buf[6]);
+        GTP_INFO("IC3 Version: %c%c%c%c_%02x%02x", buf[2], buf[3], buf[4], buf[5], buf[7], buf[6]);
 				
 				//GT9157芯片
 				if(buf[2] == '9' && buf[3] == '1' && buf[4] == '5' && buf[5] == '7')

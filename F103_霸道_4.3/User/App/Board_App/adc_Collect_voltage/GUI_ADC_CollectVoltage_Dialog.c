@@ -8,7 +8,7 @@
 #include "emXGUI_JPEG.h"
 #include "emxgui_png.h"
 #include  "GUI_ADC_CollectVoltage_Dialog.h"
-
+#include "bsp_adc.h"
 
 /* 窗口 ID */
 #define ID_ADV_WIN         0x01    // 中间显示窗口ID
@@ -16,24 +16,17 @@
 #define ID_TEXTBOX_Title   0x03    // 标题栏
 #define ID_TEXTBOX_Brigh   0x04    // 亮度百分比
 
-#define CircleCenter_1    (46)     // 三角形旋转半径
-#define CircleCenter_2    (64)    // 圆弧进度条半径（小）
-#define CircleCenter_3    (CircleCenter_2 + 6)    //  不大于 CircleSize / 2
+#define CircleCenter_1    (110)     // 三角形旋转半径
+#define CircleCenter_2    (130)    // 圆弧进度条半径（小）
+#define CircleCenter_3    (CircleCenter_2 + 10)    //  不大于 CircleSize / 2
 
-/* 移动方向标志 */
-#define LeftToRight    0
-#define RightToLeft    1
-#define MOVE_WIN       1
+#define CircleSize    300    // 圆形显示区域的大小
+#define Circle_X      250    // 圆形显示区域的位置
+#define Circle_Y      (65+50)   // 圆形显示区域的位置
 
-#define CircleSize    140    // 圆形显示区域的大小
-#define Circle_X      169    // 圆形显示区域的位置
-#define Circle_Y      (54)   // 圆形显示区域的位置
+#define TitleHeight    50    // 标题栏的高度
 
-#define GUI_ADC_BACKGROUNG_PIC      "adc_desktop.jpg"
-
-#define TitleHeight    28    // 标题栏的高度
-
-#define TriangleLen    10    // 三角形的边长
+#define TriangleLen    20    // 三角形的边长
 
 uint8_t AovingDirection = 0;
 double count = 0.0;
@@ -42,7 +35,7 @@ HWND Title_Handle;
 HWND Brigh_Handle;
 HWND ADC_Handle;
 
-HDC bk_hdc, TrianglePointer_DC;
+HDC TrianglePointer_DC;
 
 static BITMAP bm_Triangle;
 
@@ -95,18 +88,21 @@ static void CollectVoltage_ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
 
   if (ds->State & BST_PUSHED)
 	{ //按钮是按下状态
-		SetPenColor(hdc, MapRGB(hdc, 250, 250, 250));
+		SetPenColor(hdc, MapRGB(hdc, 1, 191, 255));
 	}
 	else
 	{ //按钮是弹起状态
-
-		SetPenColor(hdc, MapRGB(hdc, 1, 191, 255));      //设置画笔色
+		SetPenColor(hdc, MapRGB(hdc, 250, 250, 250));      //设置画笔色
 	}
+  
+  SetPenSize(hdc, 2);
+
+  InflateRect(&rc, 0, -1);
   
   for(int i=0; i<4; i++)
   {
     HLine(hdc, rc.x, rc.y, rc.w);
-    rc.y += 5;
+    rc.y += 9;
   }
 }
 
@@ -119,16 +115,17 @@ static void Textbox_OwnerDraw(DRAWITEM_HDR *ds) //绘制一个按钮外观
 {
 	HWND hwnd;
 	HDC hdc;
-	RECT rc, rc_tmp;
+	RECT rc;
 	WCHAR wbuf[128];
 
 	hwnd = ds->hwnd; //button的窗口句柄.
 	hdc = ds->hDC;   //button的绘图上下文句柄.
-  GetClientRect(hwnd, &rc_tmp);//得到控件的位置
-  GetClientRect(hwnd, &rc);//得到控件的位置
-  WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
 
-  BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, bk_hdc, rc_tmp.x, rc_tmp.y, SRCCOPY);
+  GetClientRect(hwnd, &rc);//得到控件的位置
+
+  SetBrushColor(hdc, MapRGB(hdc, 240, 240, 240));
+  FillRect(hdc, &rc);
+  
   SetTextColor(hdc, MapRGB(hdc, 255, 255, 255));
 
   GetWindowText(hwnd, wbuf, 128); //获得按钮控件的文字
@@ -149,9 +146,19 @@ void Circle_Paint(HWND hwnd, HDC hdc)
 
   RotateBitmap(hdc, CircleSize/2, CircleSize/2, &bm_Triangle, angle + 45);
   
+  SetBrushColor(hdc, MapARGB(hdc, 255, 80, 80, 80));
+  FillArc(hdc, CircleSize/2, CircleSize/2 + 2, CircleCenter_2, CircleCenter_3, -45, 225);
+  /* 计算左边小圆圈的坐标 */
+  vertex_x =  CircleSize / 2 - ((CircleCenter_3 - CircleCenter_2) / 2 + CircleCenter_2) * sin(3.14/4); 
+  vertex_y =  CircleSize / 2 + ((CircleCenter_3 - CircleCenter_2) / 2 + CircleCenter_2) * cos(3.14/4) + 2; 
+  FillCircle(hdc, vertex_x, vertex_y, (CircleCenter_3 - CircleCenter_2) / 2);     // 左边小圆圈
+  
+  vertex_x =  CircleSize / 2 + ((CircleCenter_3 - CircleCenter_2) / 2 + CircleCenter_2) * sin(3.14/4) + 1;
+  FillCircle(hdc, vertex_x, vertex_y, (CircleCenter_3 - CircleCenter_2) / 2);     // 左边小圆圈
+  
   if (ADC_Vol > 0.03)    // 电压太小不画白色小圆圈
   {
-    SetBrushColor(hdc, MapARGB(hdc, 255, 200, 200, 200));
+    SetBrushColor(hdc, MapARGB(hdc, 255, 250, 250, 250));
     FillArc(hdc, CircleSize/2, CircleSize/2 + 2, CircleCenter_2+1, CircleCenter_3-1, -45, angle - 45);
     /* 计算左边小圆圈的坐标 */
     vertex_x =  CircleSize / 2 - ((CircleCenter_3 - CircleCenter_2) / 2 + CircleCenter_2) * sin(3.14/4); 
@@ -164,22 +171,26 @@ void Circle_Paint(HWND hwnd, HDC hdc)
   /* 使用默认字体 */
 	SetFont(hdc, defaultFont);
 
-  rc.w = 24*3;
-  rc.h = 48;
+  rc.w = 24*4;
+  rc.h = 64;
   rc.x = CircleSize/2 - rc.w/2 - 5;
   rc.y = CircleSize/2 - rc.h/2;
 
   /* 显示电压百分比 */
   SetTextColor(hdc, MapARGB(hdc, 255, 0, 0, 0));
-  SetFont(hdc, controlFont_32);
+  
+  HFONT controlFont_64;
+	
+  controlFont_64 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_64);
+  SetFont(hdc, controlFont_64);
   x_sprintf(cbuf, "%d", (int)(ADC_Vol/3.3*100));    // H -> % x_wsprintf(Backlightwbuf, L"%d", i);
   x_mbstowcs(wbuf, cbuf, 128);
   rc.w -= 20;
   DrawText(hdc, wbuf, -1, &rc, DT_VCENTER|DT_RIGHT);    // 绘制文字(居中对齐方式)DT_CENTER
   rc.w += 20;
-  rc.y += 4;
-  SetFont(hdc, controlFont_24);
-  DrawText(hdc, L"H", -1, &rc, DT_VCENTER|DT_RIGHT);    // 绘制文字(居中对齐方式)DT_CENTER
+  rc.y += 10;
+  SetFont(hdc, defaultFont);
+  DrawText(hdc, L"%", -1, &rc, DT_VCENTER|DT_RIGHT);    // 绘制文字(居中对齐方式)DT_CENTER
 
   /* 显示采集到的电压值 */
   SetFont(hdc, defaultFont);
@@ -189,6 +200,8 @@ void Circle_Paint(HWND hwnd, HDC hdc)
   x_sprintf(cbuf, "%.2fV", ADC_Vol);
   x_mbstowcs(wbuf, cbuf, 128);
   DrawText(hdc, wbuf, -1, &rc, DT_VCENTER|DT_CENTER);    // 绘制文字(居中对齐方式)
+  
+  DeleteFont(controlFont_64);
 }
  
 static LRESULT	CollectVoltage_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -202,15 +215,15 @@ static LRESULT	CollectVoltage_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
       ADCx_Init();    // 初始化 ADC
             
       CreateWindow(BUTTON, L"O", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY |WS_OWNERDRAW|WS_VISIBLE,
-                  286, 10, 25, 25, hwnd, eID_ADC_EXIT, NULL, NULL); 
+                  740, 10, 36, 36, hwnd, eID_ADC_EXIT, NULL, NULL); 
 
       rc.w = GUI_XSIZE / 2;
       rc.h = TitleHeight;
       rc.x = GUI_XSIZE / 2 - rc.w / 2;
       rc.y = 0;
 
-      Title_Handle = CreateWindow(TEXTBOX, L"ADC一电位器电压显示", WS_VISIBLE | WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_Title, NULL, NULL);//
-      SendMessage(Title_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);   
+//      Title_Handle = CreateWindow(TEXTBOX, L"ADC一电位器电压显示", WS_VISIBLE | WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_Title, NULL, NULL);//
+//      SendMessage(Title_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);   
 
        /* 画三角形指针 */
       TrianglePointer_DC = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888, TriangleLen, CircleCenter_1 * 2);    // 创建三角形指针内存 DC
@@ -218,31 +231,6 @@ static LRESULT	CollectVoltage_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
       X_MeterPointer(TrianglePointer_DC, TriangleLen/2, CircleCenter_1, CircleCenter_1-2, MapARGB(TrianglePointer_DC, 255, 250, 20, 20), 0);
       /* 转换成bitmap */
       DCtoBitmap(TrianglePointer_DC,&bm_Triangle);
-
-      BOOL res;
-      u8 *jpeg_buf;
-      u32 jpeg_size;
-      JPG_DEC *dec;
-
-      if (strstr(GUI_ADC_BACKGROUNG_PIC, "0:/") == NULL)
-        res = RES_Load_Content(GUI_ADC_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);
-      else
-        res = FS_Load_Content(GUI_ADC_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);
-
-      bk_hdc = CreateMemoryDC(SURF_SCREEN, GUI_XSIZE, GUI_YSIZE);
-      if(res)
-      {
-        /* 根据图片数据创建JPG_DEC句柄 */
-        dec = JPG_Open(jpeg_buf, jpeg_size);
-
-        /* 绘制至内存对象 */
-        JPG_Draw(bk_hdc, 0, 0, dec);
-
-        /* 关闭JPG_DEC句柄 */
-        JPG_Close(dec);
-      }
-      /* 释放图片内容空间 */
-      RES_Release_Content((char **)&jpeg_buf);
 
       SetTimer(hwnd, 2, 20, TMR_START, NULL);
 
@@ -295,25 +283,42 @@ static LRESULT	CollectVoltage_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
     {
       
       HDC hdc =(HDC)wParam;
-      RECT rc =*(RECT*)lParam;
       
-      BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, bk_hdc, rc.x, rc.y, SRCCOPY);
+      RECT rc = {0, 0, GUI_XSIZE, GUI_YSIZE};
+      RECT rc_title_grad = {0, 50, GUI_XSIZE, 5};
+      
+      SetBrushColor(hdc, MapRGB(hdc, 240, 240, 240));
+      FillRect(hdc, &rc);
 
-      return TRUE;
+      rc.h = 50;
+      SetBrushColor(hdc, MapRGB(hdc, 1, 218, 254));
+      FillRect(hdc, &rc);//, MapRGB(hdc, 1, 218, 254), MapRGB(hdc, 1, 168, 255), FALSE);
+      
+      GradientFillRect(hdc, &rc_title_grad, MapRGB(hdc, 150, 150, 150), MapRGB(hdc, 240, 240, 240), TRUE);
+      
+      SetTextColor(hdc, MapRGB(hdc, 50, 50, 50));
+      DrawText(hdc, L"ADC 电压采集", -1, &rc, DT_VCENTER|DT_CENTER);
+      
+
+      return FALSE;
     }
 
     case WM_PAINT:
     {
       HDC hdc , hdc_mem;
       PAINTSTRUCT ps;
-      //  RECT rc = {0,0,800,70};
+      RECT rc = {0, 0, CircleSize, CircleSize};
       //  hdc_mem = CreateMemoryDC(SURF_ARGB4444, 800,70);
 
       hdc_mem = CreateMemoryDC(SURF_SCREEN, CircleSize, CircleSize);
 
       hdc = BeginPaint(hwnd, &ps);
 
-      BitBlt(hdc_mem, 0, 0, CircleSize, CircleSize, bk_hdc, Circle_X, Circle_Y, SRCCOPY);
+      SetBrushColor(hdc_mem, MapRGB(hdc, 240, 240, 240));
+      FillRect(hdc_mem, &rc);
+      
+      SetBrushColor(hdc_mem, MapRGB(hdc, 1, 218, 254));
+      FillCircle(hdc_mem, CircleSize/2, CircleSize/2, CircleSize/2);
 
       Circle_Paint(hwnd, hdc_mem);    // 绘制第一个界面中的圆形显示区域
       
@@ -377,7 +382,6 @@ static LRESULT	CollectVoltage_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
     case WM_DESTROY:
     {
       stopADC();    // 停止ADC的采集
-      DeleteDC(bk_hdc);
       DeleteDC(TrianglePointer_DC);
       return PostQuitMessage(hwnd);	
     } 

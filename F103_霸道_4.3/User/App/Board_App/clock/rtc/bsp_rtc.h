@@ -2,8 +2,8 @@
 #define	__RTC_H
 
 #include "stm32f10x.h"
-#include "..\clock\rtc\bsp_calendar.h"
-#include "..\clock\rtc\bsp_date.h"
+#include "./clock/rtc/bsp_calendar.h"
+#include "./clock/rtc/bsp_date.h"
 #include "./usart/bsp_usart.h"
 
 /*等待超时时间*/

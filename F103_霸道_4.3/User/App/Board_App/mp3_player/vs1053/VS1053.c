@@ -1,8 +1,10 @@
 #include "ff.h"
 #include "gui_drv_cfg.h"
-#include  "VS1053.h"
+#include  "./mp3_player/vs1053/VS1053.h"
 #include "board.h"
 #include "string.h"
+#include "./dwt_delay/core_delay.h"   
+
 //VS1053默认设置参数
 _vs1053_obj vsset=
 {

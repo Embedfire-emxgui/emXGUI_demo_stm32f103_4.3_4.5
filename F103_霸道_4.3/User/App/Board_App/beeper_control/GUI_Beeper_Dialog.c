@@ -5,45 +5,7 @@
 #include "ff.h"
 #include "x_libc.h"
 #include "GUI_AppDef.h"
-#include "emXGUI_JPEG.h"
-#include "emxgui_png.h"
-
-#define GUI_BEEPER_BACKGROUNG_PIC   "0:/beeper_desktop.jpg"
-#define GUI_BEEPER_HORN_PIC         "0:/beeper_horn.png"
-#define GUI_BEEPER_HORN1_PIC        "0:/beeper_horn1.png"
-#define GUI_BEEPER_HORN2_PIC        "0:/beeper_horn2.png"
-#define GUI_BEEPER_HORN3_PIC        "0:/beeper_horn3.png"
-#define GUI_BEEPER_BUTTON_PIC       "0:/beeper_button.png"
-
-typedef enum
-{
-  hdc_beeper_horn = 0,
-	hdc_beeper_horn1,
-	hdc_beeper_horn2,
-	hdc_beeper_horn3,
-	hdc_beeper_button,
-  
-	hdc_beeper_end,
-}hdc_beep_png_t;
-
-typedef struct{
-	char *pic_name;      // 图片名
-	int w;               // 图片宽
-	int h;               // 图片高
-	hdc_beep_png_t id;   // hdc 编号
-}beeper_hdc_t;
-
-static HDC hdc_beeper_bk;
-static HDC hdc_beeper_png[hdc_beeper_end];
-
-const beeper_hdc_t beeper_png_info[hdc_beeper_end] = 
-{
-  {GUI_BEEPER_HORN_PIC,     59, 101,   hdc_beeper_horn},
-  {GUI_BEEPER_HORN1_PIC,    13,  40,   hdc_beeper_horn1},
-  {GUI_BEEPER_HORN2_PIC,    21,  79,   hdc_beeper_horn2},
-  {GUI_BEEPER_HORN3_PIC,    29, 116,   hdc_beeper_horn3},
-  {GUI_BEEPER_BUTTON_PIC,   30,  30,   hdc_beeper_button},
-};
+#include "./beep/bsp_beep.h"   
 
 /* 按钮 ID */
 enum 
@@ -76,10 +38,14 @@ static void ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
     SetPenColor(hdc, MapRGB(hdc, 250, 250, 250));
   }
 
+  SetPenSize(hdc, 2);
+
+  InflateRect(&rc, 0, -1);
+  
   for(int i=0; i<4; i++)
   {
     HLine(hdc, rc.x, rc.y, rc.w);
-    rc.y += 5;
+    rc.y += 9;
   }
 }
 
@@ -92,7 +58,7 @@ static void sw_button_OwnerDraw(DRAWITEM_HDR *ds)
 {
   HWND hwnd;
 	HDC hdc;
-  RECT rc, rc_tmp;
+  RECT rc;
 	WCHAR wbuf[128];
 
   hwnd = ds->hwnd; //button的窗口句柄.
@@ -100,27 +66,41 @@ static void sw_button_OwnerDraw(DRAWITEM_HDR *ds)
   rc = ds->rc;
 
 	/* 背景 */
-  GetClientRect(hwnd, &rc_tmp);//得到控件的位置
-  GetClientRect(hwnd, &rc);//得到控件的位置
-  WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
-
-  BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_beeper_bk, rc_tmp.x, rc_tmp.y, SRCCOPY);
+  SetBrushColor(hdc, MapRGB(hdc, 240, 240, 240));
+  FillRect(hdc, &rc);
+  
+  EnableAntiAlias(hdc, TRUE);
+  
+  SetBrushColor(hdc, MapRGB(hdc, 50, 240, 240));
+  FillRoundRect(hdc, &rc, MIN(rc.w, rc.h)/2);
 
   GetWindowText(hwnd, wbuf, 128); //获得按钮控件的文字
-  rc.h = 83;
+  
   if (ds->ID == ID_BEEPER_SW)
   {
     if (sw_flag == 0)
     {
-      BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_beeper_png[hdc_beeper_button], 0, 0, SRCCOPY);
-      InflateRect(&rc, 0, -6);
+      SetBrushColor(hdc, MapRGB(hdc, 230, 230, 230));
+      InflateRect(&rc, -5, -5);
+      FillRoundRect(hdc, &rc, MIN(rc.w, rc.h)/2);
+      
+      SetBrushColor(hdc, MapRGB(hdc, 255, 255, 255));
+      FillCircle(hdc, rc.w/2 + 5, rc.w/2 + 5, MIN(rc.w, rc.h)/2);
+
+      rc.h = rc.w;
       DrawText(hdc, wbuf, -1, &rc, DT_VCENTER|DT_CENTER);    // 绘制文字(居中对齐方式)
     }
     else 
     {
-      rc.y = ds->rc.h - rc.h;
-      BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_beeper_png[hdc_beeper_button], 0, 0, SRCCOPY);
-      InflateRect(&rc, 0, -6);
+      SetBrushColor(hdc, MapRGB(hdc, 50, 50, 240));
+      InflateRect(&rc, -5, -5);
+      FillRoundRect(hdc, &rc, MIN(rc.w, rc.h)/2);
+      
+      SetBrushColor(hdc, MapRGB(hdc, 240, 240, 240));
+      FillCircle(hdc, rc.w/2 + 5, rc.h - rc.w/2 + 5, MIN(rc.w, rc.h)/2);
+      
+      rc.y = rc.h - rc.w;
+      rc.h = rc.w;
       DrawText(hdc, wbuf, -1, &rc, DT_VCENTER|DT_CENTER);    // 绘制文字(居中对齐方式)
     }
   }
@@ -128,18 +108,32 @@ static void sw_button_OwnerDraw(DRAWITEM_HDR *ds)
   {
     if (tick_flag == 0)
     {
-      BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_beeper_png[hdc_beeper_button], 0, 0, SRCCOPY);
-      InflateRect(&rc, 0, -6);
+      SetBrushColor(hdc, MapRGB(hdc, 230, 230, 230));
+      InflateRect(&rc, -5, -5);
+      FillRoundRect(hdc, &rc, MIN(rc.w, rc.h)/2);
+      
+      SetBrushColor(hdc, MapRGB(hdc, 255, 255, 255));
+      FillCircle(hdc, rc.w/2 + 5, rc.w/2 + 5, MIN(rc.w, rc.h)/2);
+      
+      rc.h = rc.w;
       DrawText(hdc, wbuf, -1, &rc, DT_VCENTER|DT_CENTER);    // 绘制文字(居中对齐方式)
     }
     else 
     {
-      rc.y = ds->rc.h - rc.h;
-      BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_beeper_png[hdc_beeper_button], 0, 0, SRCCOPY);
-      InflateRect(&rc, 0, -6);
+      SetBrushColor(hdc, MapRGB(hdc, 50, 50, 240));
+      InflateRect(&rc, -5, -5);
+      FillRoundRect(hdc, &rc, MIN(rc.w, rc.h)/2);
+      
+      SetBrushColor(hdc, MapRGB(hdc, 240, 240, 240));
+      FillCircle(hdc, rc.w/2 + 5, rc.h - rc.w/2 + 5, MIN(rc.w, rc.h)/2);
+      
+      rc.y = rc.h - rc.w;
+      rc.h = rc.w;
       DrawText(hdc, wbuf, -1, &rc, DT_VCENTER|DT_CENTER);    // 绘制文字(居中对齐方式)
     }
   }
+  
+  EnableAntiAlias(hdc, FALSE);
 }
 
 /*
@@ -149,43 +143,43 @@ static void sw_button_OwnerDraw(DRAWITEM_HDR *ds)
 */
 static void press_button_OwnerDraw(DRAWITEM_HDR *ds)
 {
-  HWND hwnd;
 	HDC hdc;
-  RECT rc, rc_tmp;
+  RECT rc;
 
-  hwnd = ds->hwnd; //button的窗口句柄.
 	hdc = ds->hDC;   //button的绘图上下文句柄.
   rc = ds->rc;
 
 	/* 背景 */
-  GetClientRect(hwnd, &rc_tmp);//得到控件的位置
-  GetClientRect(hwnd, &rc);//得到控件的位置
-  WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
-
-  BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_beeper_bk, rc_tmp.x, rc_tmp.y, SRCCOPY);
-
-  BitBlt(hdc, 54, 77, 103, 190, hdc_beeper_png[hdc_beeper_horn], 0, 0, SRCCOPY);
+  SetBrushColor(hdc, MapRGB(hdc, 240, 240, 240));
+  FillRect(hdc, &rc);
+  
+  EnableAntiAlias(hdc, TRUE);
+  
+  SetBrushColor(hdc, MapRGB(hdc, 50, 240, 240));
+  FillCircle(hdc, rc.w/2, rc.h/2, MIN(rc.w, rc.h)/2);
+  
+  SetBrushColor(hdc, MapRGB(hdc, 50, 50, 50));
   
   switch (press_flag)
   {
     case 3:
-      BitBlt(hdc, 200, 62, 74, 220, hdc_beeper_png[hdc_beeper_horn3], 0, 0, SRCCOPY);
+      FillArc(hdc, rc.w/2, rc.h/2, 100, 120, 0, 360);
     
     case 2:
-      BitBlt(hdc, 187, 98, 53, 148, hdc_beeper_png[hdc_beeper_horn2], 0, 0, SRCCOPY);
+      FillArc(hdc, rc.w/2, rc.h/2, 60, 80, 0, 360);
 
     case 1:
-      BitBlt(hdc, 174, 135, 33, 74, hdc_beeper_png[hdc_beeper_horn1], 0, 0, SRCCOPY);
+      FillArc(hdc, rc.w/2, rc.h/2, 20, 40, 0, 360);
   
   default:
     break;
   }
+  
+  EnableAntiAlias(hdc, FALSE);
 }
 
 static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-  
-  static uint8_t Load_Flag = 1;
   switch(msg)
   {
     case WM_CREATE:
@@ -194,63 +188,17 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       GetClientRect(hwnd, &rc); 
             
       CreateWindow(BUTTON, L"O", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY | WS_OWNERDRAW | WS_VISIBLE,
-                  286, 2, 23, 23, hwnd, ID_BEEPER_EXIT, NULL, NULL); 
+                  740, 10, 36, 36, hwnd, ID_BEEPER_EXIT, NULL, NULL); 
 
       CreateWindow(BUTTON, L"滴答", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY | WS_OWNERDRAW | WS_VISIBLE,
-                  15, 95, 32, 77, hwnd, ID_BEEPER_TICK, NULL, NULL); 
+                  71, 177, 84, 166, hwnd, ID_BEEPER_TICK, NULL, NULL); 
 
       CreateWindow(BUTTON, L"按住叫", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY | WS_OWNERDRAW | WS_VISIBLE,
-                  69, 42, 182, 182, hwnd, ID_BEEPER_PRESS, NULL, NULL); 
+                  228, 82, 344, 344, hwnd, ID_BEEPER_PRESS, NULL, NULL); 
 
       CreateWindow(BUTTON, L"长鸣", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY | WS_OWNERDRAW | WS_VISIBLE,
-                  269, 95, 32, 77, hwnd, ID_BEEPER_SW, NULL, NULL); 
+                  650, 177, 84, 166, hwnd, ID_BEEPER_SW, NULL, NULL); 
       
-      u8 *jpeg_buf;
-      u32 jpeg_size;
-      JPG_DEC *dec;
-      BOOL res = NULL;
-
-//      res = RES_Load_Content(GUI_BEEPER_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);
-      res = FS_Load_Content(GUI_BEEPER_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);
-      hdc_beeper_bk = CreateMemoryDC(SURF_SCREEN, GUI_XSIZE, GUI_YSIZE);
-      if(res)
-      {
-        /* 根据图片数据创建JPG_DEC句柄 */
-        dec = JPG_Open(jpeg_buf, jpeg_size);
-
-        /* 绘制至内存对象 */
-        JPG_Draw(hdc_beeper_bk, 0, 0, dec);
-
-        /* 关闭JPG_DEC句柄 */
-        JPG_Close(dec);
-      }
-      /* 释放图片内容空间 */
-      RES_Release_Content((char **)&jpeg_buf);
-
-      u8 *pic_buf;
-      u32 pic_size;
-      PNG_DEC *png_dec;
-      BITMAP png_bm;
-      
-      for (uint8_t xC=0; xC<hdc_beeper_end; xC++)
-      {
-        /* 创建 HDC */
-        hdc_beeper_png[beeper_png_info[xC].id] = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888, beeper_png_info[xC].w, beeper_png_info[xC].h);
-        ClrDisplay(hdc_beeper_png[beeper_png_info[xC].id], NULL, 0);
-//          res = RES_Load_Content(clock_png_info[xC].pic_name, (char**)&pic_buf, &pic_size);
-        res = FS_Load_Content(beeper_png_info[xC].pic_name, (char**)&pic_buf, &pic_size);
-        if(res)
-        {
-          png_dec = PNG_Open(pic_buf, pic_size);
-          PNG_GetBitmap(png_dec, &png_bm);
-          DrawBitmap(hdc_beeper_png[beeper_png_info[xC].id], 0, 0, &png_bm, NULL);
-          PNG_Close(png_dec);
-        }
-        /* 释放图片内容空间 */
-        RES_Release_Content((char **)&pic_buf);
-      }
-      
-//      SetTimer(hwnd, 2, 10, TMR_START | TMR_SINGLE, NULL);
       SetTimer(hwnd, 5, 10, TMR_START | TMR_SINGLE, NULL);
       SetTimer(hwnd, 6, 1000, TMR_START | TMR_SINGLE, NULL);
       break;
@@ -268,8 +216,6 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       else if(timer_id == 6)
       {
         BEEP_OFF;
-        KillTimer(hwnd,55);
-        KillTimer(hwnd,66);
       }
       else if (timer_id == 1)
       {
@@ -288,61 +234,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         press_flag %= 4;
 
         RedrawWindow(GetDlgItem(hwnd, ID_BEEPER_PRESS), NULL, TRUE);
-			} 
-      else if (timer_id == 2)
-      {
-        u8 *jpeg_buf;
-        u32 jpeg_size;
-        JPG_DEC *dec;
-        BOOL res = NULL;
-
-        res = RES_Load_Content(GUI_BEEPER_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);
-//        res = FS_Load_Content(GUI_BEEPER_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);
-        hdc_beeper_bk = CreateMemoryDC(SURF_SCREEN, GUI_XSIZE, GUI_YSIZE);
-        if(res)
-        {
-          /* 根据图片数据创建JPG_DEC句柄 */
-          dec = JPG_Open(jpeg_buf, jpeg_size);
-
-          /* 绘制至内存对象 */
-          JPG_Draw(hdc_beeper_bk, 0, 0, dec);
-
-          /* 关闭JPG_DEC句柄 */
-          JPG_Close(dec);
-        }
-        /* 释放图片内容空间 */
-        RES_Release_Content((char **)&jpeg_buf);
-
-        u8 *pic_buf;
-        u32 pic_size;
-        PNG_DEC *png_dec;
-        BITMAP png_bm;
-        
-        for (uint8_t xC=0; xC<hdc_beeper_end; xC++)
-        {
-          /* 创建 HDC */
-          hdc_beeper_png[beeper_png_info[xC].id] = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888, beeper_png_info[xC].w, beeper_png_info[xC].h);
-          ClrDisplay(hdc_beeper_png[beeper_png_info[xC].id], NULL, 0);
-//          res = RES_Load_Content(clock_png_info[xC].pic_name, (char**)&pic_buf, &pic_size);
-          res = FS_Load_Content(beeper_png_info[xC].pic_name, (char**)&pic_buf, &pic_size);
-          if(res)
-          {
-            png_dec = PNG_Open(pic_buf, pic_size);
-            PNG_GetBitmap(png_dec, &png_bm);
-            DrawBitmap(hdc_beeper_png[beeper_png_info[xC].id], 0, 0, &png_bm, NULL);
-            PNG_Close(png_dec);
-          }
-          /* 释放图片内容空间 */
-          RES_Release_Content((char **)&pic_buf);
-        }
-
-        Load_Flag = 1;    // 标志资源加载完成
-        for (uint32_t xC=ID_BEEPER_TICK; xC<=ID_BEEPER_EXIT; xC++)
-        {
-          ShowWindow(GetDlgItem(hwnd, xC), SW_SHOW);    // 资源加载完成，显示主页的全部控件
-        }
-        InvalidateRect(hwnd, NULL, TRUE);    // 重绘窗口
-      }
+			}
         
     }break;
 
@@ -352,19 +244,20 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       PAINTSTRUCT ps;
       hdc = BeginPaint(hwnd, &ps);
       
-      RECT rc2 = {0, 0, GUI_XSIZE, GUI_YSIZE};
-        
-      if (Load_Flag)     // 资源加载完成
-      {
-        BitBlt(hdc, 0, 0, GUI_XSIZE, GUI_YSIZE, hdc_beeper_bk, 0, 0, SRCCOPY);
-      }
-      else
-      {    /* 资源加载未完成 */ 
-        SetBrushColor(hdc, MapRGB(hdc, 10, 10, 10));
-        FillRect(hdc, &rc2);
-        SetTextColor(hdc, MapRGB(hdc, 250, 250, 250));
-        DrawText(hdc, L"资源加载中，请稍等...", -1, &rc2, DT_VCENTER|DT_CENTER);//绘制文字(居中对齐方式)
-      }
+      RECT rc = {0, 0, GUI_XSIZE, GUI_YSIZE};
+      RECT rc_title_grad = {0, 50, GUI_XSIZE, 5};
+      
+      SetBrushColor(hdc, MapRGB(hdc, 240, 240, 240));
+      FillRect(hdc, &rc);
+
+      rc.h = 50;
+      SetBrushColor(hdc, MapRGB(hdc, 1, 218, 254));
+      FillRect(hdc, &rc);//, MapRGB(hdc, 1, 218, 254), MapRGB(hdc, 1, 168, 255), FALSE);
+      
+      GradientFillRect(hdc, &rc_title_grad, MapRGB(hdc, 150, 150, 150), MapRGB(hdc, 240, 240, 240), TRUE);
+      
+      SetTextColor(hdc, MapRGB(hdc, 50, 50, 50));
+      DrawText(hdc, L"蜂鸣器控制", -1, &rc, DT_VCENTER|DT_CENTER);
 
       EndPaint(hwnd, &ps);
       break;
@@ -380,7 +273,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
           {
             ExitButton_OwnerDraw(ds);
             return TRUE;             
-          }  
+          }
 
           case ID_BEEPER_SW:
           case ID_BEEPER_TICK:

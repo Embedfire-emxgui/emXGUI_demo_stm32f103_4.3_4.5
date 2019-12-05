@@ -33,9 +33,6 @@ extern HFONT defaultFont;
 /* 图标字体 */
 extern HFONT iconFont_100;
 
-/* 控制图标字体 */
-extern HFONT controlFont_64;
-
 /* 默认英文字体 */
 extern HFONT defaultFontEn;
   

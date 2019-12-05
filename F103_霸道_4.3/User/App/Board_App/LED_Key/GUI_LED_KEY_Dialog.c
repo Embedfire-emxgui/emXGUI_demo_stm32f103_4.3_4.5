@@ -9,16 +9,7 @@
 #include "emxgui_png.h"
 #include "./led/bsp_led.h"  
 #include "./key/bsp_key.h" 
-
-/* 图片资源 */
-#define GUI_LED_KEY_PIC                 "settingsdesktop.jpg"
-#define GUI_KEY_LED_BTN_PIC             "clock_but.png"              
-#define GUI_KEY_LED_BTN_PRESS_PIC       "clock_but_press.png"   
-
-static HDC bk_hdc;
-static HDC hdc_btn_press;
-static HDC hdc_btn;
-
+ 
 /* 按钮 ID */
 enum
 {
@@ -45,18 +36,26 @@ static void btn_owner_draw(DRAWITEM_HDR *ds) //绘制一个按钮外观
   GetClientRect(hwnd, &rc_tmp);//得到控件的位置
   WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
 
-  BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, bk_hdc, rc_tmp.x, rc_tmp.y, SRCCOPY);
+  EnableAntiAlias(hdc, TRUE);
+  
+  SetBrushColor(hdc, MapRGB(hdc, 66, 254, 255));
+  FillRoundRect(hdc, &rc, MIN(rc.h, rc.w));
 
   if (ds->State & BST_PUSHED)
   { //按钮是按下状态
-    BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_btn_press, 0, 0, SRCCOPY);
+    OffsetRect(&rc, 1, 1);
     SetTextColor(hdc, MapRGB(hdc, 200, 200, 200));
   }
   else
   { //按钮是弹起状态
-    BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_btn, 0, 0, SRCCOPY);
     SetTextColor(hdc, MapRGB(hdc, 255, 255, 255));
   }
+  
+  InflateRect(&rc, -5, -5);
+  SetBrushColor(hdc, MapRGB(hdc, 13, 148, 214));
+  FillRoundRect(hdc, &rc, MIN(rc.h, rc.w));
+  
+  EnableAntiAlias(hdc, FALSE);
   
   GetWindowText(ds->hwnd, wbuf, 128); //获得按钮控件的文字
   
@@ -89,10 +88,14 @@ static void LED_KEY_ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
 		SetPenColor(hdc, MapRGB(hdc, 250, 250, 250));      //设置画笔色
 	}
   
+  SetPenSize(hdc, 2);
+
+  InflateRect(&rc, 0, -1);
+  
   for(int i=0; i<4; i++)
   {
     HLine(hdc, rc.x, rc.y, rc.w);
-    rc.y += 5;
+    rc.y += 9;
   }
 
 }
@@ -108,72 +111,14 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       GetClientRect(hwnd, &rc); 
 
 			CreateWindow(BUTTON, L"O", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY |WS_OWNERDRAW|WS_VISIBLE,
-									286, 10, 23, 23, hwnd , eID_LED_KEY_EXIT, NULL, NULL); 
+									740, 25, 36, 36, hwnd , eID_LED_KEY_EXIT, NULL, NULL); 
 			CreateWindow(BUTTON, L"USER", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY |WS_OWNERDRAW|WS_VISIBLE,
-									26,  198, 71,  30, hwnd, eID_LED_USER, NULL, NULL); 
+									46,  393, 166, 70, hwnd, eID_LED_USER, NULL, NULL); 
 			CreateWindow(BUTTON, L"KEY1", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY |WS_OWNERDRAW|WS_VISIBLE,
-									123, 197,  71,  30, hwnd, eID_LED_ONOFF, NULL, NULL); 
+									317, 393, 166, 70, hwnd, eID_LED_ONOFF, NULL, NULL); 
 			CreateWindow(BUTTON, L"KEY2", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY |WS_OWNERDRAW|WS_VISIBLE,
-									221, 198, 71,  30, hwnd, eID_LED_KEY, NULL, NULL); 
+									588, 393, 166, 70, hwnd, eID_LED_KEY, NULL, NULL);  
 
-      BOOL res;
-      u8 *jpeg_buf;
-      u32 jpeg_size;
-      JPG_DEC *dec;
-      res = RES_Load_Content(GUI_LED_KEY_PIC, (char**)&jpeg_buf, &jpeg_size);
-//      res = FS_Load_Content(GUI_LED_KEY_PIC, (char**)&jpeg_buf, &jpeg_size);
-      bk_hdc = CreateMemoryDC(SURF_SCREEN, GUI_XSIZE, GUI_YSIZE);
-      if(res)
-      {
-        /* 根据图片数据创建JPG_DEC句柄 */
-        dec = JPG_Open(jpeg_buf, jpeg_size);
-
-        /* 绘制至内存对象 */
-        JPG_Draw(bk_hdc, 0, 0, dec);
-
-        /* 关闭JPG_DEC句柄 */
-        JPG_Close(dec);
-      }
-      /* 释放图片内容空间 */
-      RES_Release_Content((char **)&jpeg_buf);
-      
-      u8 *pic_buf;
-      u32 pic_size;
-      PNG_DEC *png_dec;
-      BITMAP png_bm;
-      
-
-      /* 创建 HDC */
-      hdc_btn = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888, 71, 30);
-      ClrDisplay(hdc_btn, NULL, 0);
-      res = RES_Load_Content(GUI_KEY_LED_BTN_PIC, (char**)&pic_buf, &pic_size);
-//            res = FS_Load_Content(GUI_KEY_LED_BTN_PIC, (char**)&pic_buf, &pic_size);
-      if(res)
-      {
-        png_dec = PNG_Open(pic_buf, pic_size);
-        PNG_GetBitmap(png_dec, &png_bm);
-        DrawBitmap(hdc_btn, 0, 0, &png_bm, NULL);
-        PNG_Close(png_dec);
-      }
-      /* 释放图片内容空间 */
-      RES_Release_Content((char **)&pic_buf);
-      
-      /* 创建 HDC */
-      hdc_btn_press = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888, 71, 30);
-      ClrDisplay(hdc_btn_press, NULL, 0);
-      res = RES_Load_Content(GUI_KEY_LED_BTN_PRESS_PIC, (char**)&pic_buf, &pic_size);
-//      res = FS_Load_Content(GUI_KEY_LED_BTN_PRESS_PIC, (char**)&pic_buf, &pic_size);
-      if(res)
-      {
-        png_dec = PNG_Open(pic_buf, pic_size);
-        PNG_GetBitmap(png_dec, &png_bm);
-        DrawBitmap(hdc_btn_press, 0, 0, &png_bm, NULL);
-        PNG_Close(png_dec);
-      }
-      /* 释放图片内容空间 */
-      RES_Release_Content((char **)&pic_buf);
-
-      
       SetTimer(hwnd, 0, 20, TMR_START, NULL);
       SetTimer(hwnd, 1, 300, TMR_START, NULL);
 
@@ -248,19 +193,31 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_PAINT:
     {
       HDC hdc;
-      RECT rc = {50, 0, 220, 40};
-      RECT rc_red   = {38, 96, 48, 48};
-      RECT rc_green = {135, 96, 48, 48};
-      RECT rc_blue  = {233, 96, 48, 48};
+      RECT rc_red   = {46+50,  200, 64, 64};
+      RECT rc_green = {317+50, 200, 64, 64};
+      RECT rc_blue  = {588+50, 200, 64, 64};
       PAINTSTRUCT ps;
       hdc = BeginPaint(hwnd, &ps);
       
-      BitBlt(hdc, 0, 0, GUI_XSIZE, GUI_YSIZE, bk_hdc, 0, 0, SRCCOPY);
-      
+      RECT rc_title = {0, 0, GUI_XSIZE, 80};
+      RECT rc_title_grad = {0, 80, GUI_XSIZE, 5};
+      RECT rc_lyric = {0, 80, GUI_XSIZE, 400};
+//      RECT rc_control = {0, 396, GUI_XSIZE, 84};
+      SetBrushColor(hdc, MapRGB(hdc, 1, 218, 254));
+      FillRect(hdc, &rc_title);
+//         GradientFillRect(hdc, &rc_title, MapRGB(hdc, 1, 218, 254), MapRGB(hdc, 1, 168, 255), FALSE);
+
       SetFont(hdc, defaultFont);
       SetTextColor(hdc, MapRGB(hdc, 255, 255, 255));
-      DrawText(hdc, L"LED&KEY测试", -1, &rc, DT_VCENTER|DT_CENTER);
-			
+      DrawText(hdc, L"LED&KEY测试", -1, &rc_title, DT_VCENTER|DT_CENTER);
+
+      SetBrushColor(hdc, MapRGB(hdc, 240, 240, 240));
+      FillRect(hdc, &rc_lyric);
+      GradientFillRect(hdc, &rc_title_grad, MapRGB(hdc, 150, 150, 150), MapRGB(hdc, 220, 220, 220), TRUE);
+
+//      SetBrushColor(hdc, MapRGB(hdc, 1, 218, 254));
+//      FillRect(hdc, &rc_control);
+      
 			if(LED1_ON_FLAG >= 2)
 			{
 				LED1_ON_FLAG =0;
@@ -274,7 +231,9 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				LED3_ON_FLAG =0;
 			}
       
-      SetFont(hdc, controlFont_48);
+      HFONT controlFont_64;
+      controlFont_64 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_64);
+      SetFont(hdc, controlFont_64);
 			
 			if(LED1_ON_FLAG ==1)
 			{
@@ -308,7 +267,8 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			}
       
       DrawText(hdc, L"I", -1, &rc_blue, NULL);//绘制文字(居中对齐方式)
-			
+      
+			DeleteFont(controlFont_64);
       EndPaint(hwnd, &ps);
       break;
     }
@@ -372,9 +332,6 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_DESTROY:
     {
-      DeleteDC(bk_hdc);
-      DeleteDC(hdc_btn_press);
-      DeleteDC(hdc_btn);
 			LED_RGBOFF;
 			LED1_ON_FLAG=0;
 			LED2_ON_FLAG=0;

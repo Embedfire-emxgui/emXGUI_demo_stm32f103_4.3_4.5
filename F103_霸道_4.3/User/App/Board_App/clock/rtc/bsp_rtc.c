@@ -121,7 +121,7 @@ int8_t RTC_Configuration(void)
 	PWR_BackupAccessCmd(ENABLE);
 	
 	/* Reset Backup Domain */
-	BKP_DeInit();
+//	BKP_DeInit();
 	
 	/* Enable LSE */
 	RCC_LSEConfig(RCC_LSE_ON);

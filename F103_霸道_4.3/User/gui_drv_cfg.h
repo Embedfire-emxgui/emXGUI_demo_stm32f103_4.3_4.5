@@ -59,7 +59,7 @@
 #define	GUI_TOUCHSCREEN_CALIBRATE       0
 
 /* 是否显示光标 */
-#define  GUI_SHOW_CURSOR_EN        1
+#define  GUI_SHOW_CURSOR_EN        0
 
 /*===========存储器配置===gui_mem_port.c===============================================*/
 /* 通常GUI内核使用MEM内存堆，VMEM内存堆给用户使用 */
@@ -95,9 +95,12 @@
 /* 内存堆的基地址，可以为内部SRAM、外扩的SDRAM等 */  
 #define	VMEM_BASE	        (EXT_SRAM_BASE)
 /* 内存堆的总大小，单位为字节 */ 
-#define	VMEM_SIZE	        ((1024*1024))
+#define	VMEM_SIZE	        ((994*1024))
 /* 最小分配粒度，单位为字节*/  
 #define	VMEM_ALLOC_UNIT   (64)         //64字节   
+
+//设置变量定义到“EXRAM”节区的宏
+#define __EXRAM  __attribute__ ((section ("EXRAM")))
 
 /*===========字体配置===gui_font_port.c===============================================*/
 /* 默认字体使用XFT，保留，这个宏不起作用 */
@@ -150,7 +153,7 @@
   #define   GUI_CONTROL_FONT_64      "CONTROL_ICON_64_64_4BPP.xft"
   #define   GUI_CONTROL_FONT_24      "CONTROL_ICON_24_4BPP.xft"
   #define   GUI_CONTROL_FONT_32      "CONTROL_ICON_32_32_4BPP.xft"
-  #define   GUI_CONTROL_FONT_48      "CONTROL_ICON_48_4BPP.xft"
+  #define   GUI_CONTROL_FONT_48      "CONTROL_ICON_48_48_4BPP.xft"
 #endif
 
 /*===========日志输出设备配置===gui_log_port.c===============================================*/

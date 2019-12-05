@@ -1,9 +1,24 @@
+/* drivers/input/touchscreen/gt9xx.h
+ * 
+ * 2010 - 2013 Goodix Technology.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be a reference 
+ * to you, when you are integrating the GOODiX's CTP IC into your system, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+ * General Public License for more details.
+ * 
+ */
 
+#ifndef _GOODIX_GT9XX_H
+#define _GOODIX_GT9XX_H
 
-#ifndef _GOODIX_GT5XX_H_
-#define _GOODIX_GT5XX_H_
-
-#include "bsp.h"
+#include "stm32f10x.h"
 
 #ifndef NULL
   #define NULL        0
@@ -28,10 +43,10 @@
  * @buf：  存储读写数据的指针
  **/
 struct i2c_msg {
-	u8 addr;		/*从设备的I2C设备地址 */
-	u16 flags;	/*控制标志*/
-	u16 len;		/*读写数据的长度			*/
-	u8 *buf;		/*存储读写数据的指针	*/
+	uint8_t addr;		/*从设备的I2C设备地址 */
+	uint16_t flags;	/*控制标志*/
+	uint16_t len;		/*读写数据的长度			*/
+	uint8_t *buf;		/*存储读写数据的指针	*/
 };
 
 
@@ -49,7 +64,7 @@ typedef enum
 #define GTP_MAX_HEIGHT   480
 #define GTP_MAX_WIDTH    854
 #define GTP_INT_TRIGGER  0
-#define GTP_MAX_TOUCH    5
+#define GTP_MAX_TOUCH         5
 
 
 //***************************PART3:OTHER define*********************************
@@ -76,8 +91,8 @@ typedef enum
 
 #define GTP_COMMAND_READSTATUS	    0
 #define GTP_COMMAND_DIFFERENCE	    1
-#define GTP_COMMAND_SOFTRESET		2
-#define GTP_COMMAND_UPDATE	    	3
+#define GTP_COMMAND_SOFTRESET		    2
+#define GTP_COMMAND_UPDATE	    		3
 #define GTP_COMMAND_CALCULATE	    4
 #define GTP_COMMAND_TURNOFF	    	5
 
@@ -115,7 +130,7 @@ typedef enum
 
 #define RESOLUTION_LOC        3
 #define TRIGGER_LOC           8
-#define X2Y_LOC        		(1<<3)
+#define X2Y_LOC        				(1<<3)
 
 
 #define CFG_GROUP_LEN(p_cfg_grp)  (sizeof(p_cfg_grp) / sizeof(p_cfg_grp[0]))
@@ -123,9 +138,9 @@ typedef enum
 
 //***************************PART1:ON/OFF define*******************************
 
-#define GTP_DEBUG_ON         0
-#define GTP_DEBUG_ARRAY_ON   0
-#define GTP_DEBUG_FUNC_ON    0
+#define GTP_DEBUG_ON         	0
+#define GTP_DEBUG_ARRAY_ON    0
+#define GTP_DEBUG_FUNC_ON   	0
 // Log define
 #define GTP_INFO(fmt,arg...)           printf("<<-GTP-INFO->> "fmt"\n",##arg)
 #define GTP_ERROR(fmt,arg...)          printf("<<-GTP-ERROR->> "fmt"\n",##arg)
@@ -135,8 +150,8 @@ typedef enum
 																					}while(0)
 
 #define GTP_DEBUG_ARRAY(array, num)    do{\
-                                         s32 i;\
-                                         u8* a = array;\
+                                         int32_t i;\
+                                         uint8_t* a = array;\
                                          if(GTP_DEBUG_ARRAY_ON)\
                                          {\
                                             printf("<<-GTP-DEBUG-ARRAY->>\n");\
@@ -166,13 +181,12 @@ typedef enum
                                        }while (0)
 
 //*****************************End of Part III********************************
-s8 GTP_Reset_Guitar(void);
-s32 GTP_Read_Version(void);
+int8_t GTP_Reset_Guitar(void);
+int32_t GTP_Read_Version(void);
 void GTP_IRQ_Disable(void);
 void GTP_IRQ_Enable(void);
-static s32 GTP_Init_Panel(void);
-s8 GTP_Send_Command(u8 command);
+int32_t GTP_Init_Panel(void);
+int8_t GTP_Send_Command(uint8_t command);
+int GTP_Execu(int *x,int *y);
 
-void BSPTaskGTPScan(void);
-
-#endif /* _GOODIX_GT5XX_H_ */
+#endif /* _GOODIX_GT9XX_H_ */

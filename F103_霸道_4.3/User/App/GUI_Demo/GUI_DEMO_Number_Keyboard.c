@@ -4,6 +4,7 @@
 #include <emXGUI.h>
 #include "x_libc.h"
 #include <stdio.h>
+#include <string.h>
 
 /*============================================================================*/
 enum	eID

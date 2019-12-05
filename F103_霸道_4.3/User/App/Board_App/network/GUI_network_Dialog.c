@@ -289,12 +289,15 @@ static void Ent_ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
 		SetPenColor(hdc, MapRGB(hdc, 250, 250, 250));      //设置画笔色
 	}
   
+  SetPenSize(hdc, 2);
+
+  InflateRect(&rc, 0, -1);
+  
   for(int i=0; i<4; i++)
   {
     HLine(hdc, rc.x, rc.y, rc.w);
-    rc.y += 5;
+    rc.y += 9;
   }
-
 }
 
 // 重绘普通按钮
@@ -463,17 +466,17 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                   (TaskHandle_t*  )&network_task_handle);     /* 任务控制块指针 */
                       
       CreateWindow(BUTTON, L"O", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY |WS_OWNERDRAW|WS_VISIBLE,
-                  286, 4, 23, 23, hwnd, eID_BTN_EXIT, NULL, NULL); 
+                  740, 10, 36, 36, hwnd, eID_BTN_EXIT, NULL, NULL); 
                   
-      CreateWindow(GROUPBOX, L"通讯协议", WS_VISIBLE, 157, 25, 164, 52, hwnd, ID_MODE_GROUP, NULL, NULL);
+      CreateWindow(GROUPBOX, L"通讯协议", WS_VISIBLE, 400, 50, 395, 98, hwnd, ID_MODE_GROUP, NULL, NULL);
       SetWindowErase(GetDlgItem(hwnd, ID_MODE_GROUP), group_erase);
                   
       GetClientRect(GetDlgItem(hwnd,ID_MODE_GROUP),&rc);
 
-      rc0.x =1;
-      rc0.y =16;
-      rc0.w =rc.w;
-      rc0.h =rc.h-17;
+      rc0.x =2;
+      rc0.y =25;
+      rc0.w =rc.w - 4;
+      rc0.h =rc.h-25;
       MakeMatrixRect(m_rc,&rc0,0,1,2,2);		
       for(uint8_t i=0;i<3;i++)
       {					
@@ -489,47 +492,47 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
       }
 
-      rc.x = 262;
-      rc.y = 99;
-      rc.w = 54;
-      rc.h = 22;
+      rc.x = 655;
+      rc.y = 198;
+      rc.w = 135;
+      rc.h = 44;
       
       CreateWindow(BUTTON, L"连接", WS_TRANSPARENT | BS_NOTIFY|WS_VISIBLE|WS_OWNERDRAW,
                   rc.x,rc.y,rc.w,rc.h, hwnd, eID_BTN_STATE, NULL, NULL);
       
       /* 数据发送文本窗口 */
-      rc.w = 161;
-      rc.h = 117;
-      rc.x = 157;
-      rc.y = 122;
+      rc.w = 395;
+      rc.h = 232;
+      rc.x = 400;
+      rc.y = 244;
       CreateWindow(TEXTBOX, L"你好！这里是野火开发板 ^_^", WS_TRANSPARENT | WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_Send, NULL, NULL);
 
       /* 创建接收窗口 */
-      rc.w = 154;
-      rc.h = 194;
-      rc.x = 1;
-      rc.y = 26;
+      rc.w = 395;
+      rc.h = 382;
+      rc.x = 3;
+      rc.y = 52;
       Receive_Handle = CreateWindow(TEXTBOX, L"", WS_TRANSPARENT|WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_Receive, NULL, NULL);
       
-      rc.x = 281;
-      rc.y = 217;
-      rc.w = 35;
-      rc.h = 20;
+      rc.x = 703;
+      rc.y = 432;
+      rc.w = 88;
+      rc.h = 40;
       CreateWindow(BUTTON, L"发送", WS_TRANSPARENT | BS_NOTIFY|WS_VISIBLE|WS_OWNERDRAW,
                          rc.x,rc.y,rc.w,rc.h, hwnd, eID_BTN_SEND, NULL, NULL); 
                          
-      rc.x = 98;
-      rc.h = 20;
-      rc.w = 55;
-      rc.y = 217;
+      rc.x = 255;
+      rc.h = 40;
+      rc.w = 138;
+      rc.y = 434;
       CreateWindow(BUTTON, L"清空接收", WS_TRANSPARENT | BS_NOTIFY|WS_VISIBLE|WS_OWNERDRAW,
                          rc.x,rc.y,rc.w,rc.h, hwnd, eID_BTN_CLEAR, NULL, NULL); 
 
       /* IP&端口文本窗口 */
-      rc.w = 120;
-      rc.h = 22;
-      rc.x = 196;
-      rc.y = 76;
+      rc.w = 293;
+      rc.h = 48;
+      rc.x = 497;
+      rc.y = 148;
       Temp_Handle = CreateWindow(TEXTBOX, L"192.168.000.3", WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemoteIP, NULL, NULL);//
       SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);
 
@@ -545,10 +548,10 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 //      Temp_Handle = CreateWindow(TEXTBOX, L"138", WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemoteIP4, NULL, NULL);//
 //      SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);
 
-      rc.w = 55;
-      rc.h = 22;
-      rc.x = 196;
-      rc.y = 99;
+      rc.w = 138;
+      rc.h = 44;
+      rc.x = 497;
+      rc.y = 198;
       Temp_Handle = CreateWindow(TEXTBOX, L"5000", WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemotePort, NULL, NULL);//
       SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);
 
@@ -571,8 +574,8 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         ops.Flag =MB_ICONERROR;
         ops.pButtonText =btn;
         ops.ButtonCount =2;
-        RC.w = 160;
-        RC.h = 120;
+        RC.w = 300;
+        RC.h = 200;
         RC.x = (GUI_XSIZE - RC.w) >> 1;
         RC.y = (GUI_YSIZE - RC.h) >> 1;
         SelectDialogBox(hwnd, RC, L"以太网初始化失败\n请检查连接。", L"错误", &ops);    // 显示错误提示框
@@ -587,24 +590,24 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       HDC hdc;
       PAINTSTRUCT ps;
       
-      RECT rc =  {0, 0, GUI_XSIZE, GUI_YSIZE};
+      RECT rc = {0, 0, GUI_XSIZE, GUI_YSIZE};
       // hdc_pointer = CreateMemoryDC(SURF_SCREEN, PANEL_W, PANEL_H);
       hdc = BeginPaint(hwnd, &ps);
       
       SetBrushColor(hdc, MapRGB(hdc, 255, 255, 255));
       FillRect(hdc, &rc);
 
-      rc.h = 25;
+      rc.h = 50;
       GradientFillRect(hdc, &rc, MapRGB(hdc, 1, 218, 254), MapRGB(hdc, 1, 168, 255), FALSE);
       SetTextColor(hdc, MapRGB(hdc, 255, 255, 255));
       DrawText(hdc, L"以太网", -1, &rc, DT_VCENTER|DT_CENTER);
 
       SetPenColor(hdc, MapRGB(hdc, 121, 121, 121));
 
-      rc.x = 1;
-      rc.y = 26;
-      rc.w = 154;
-      rc.h = 213;
+      rc.x = 3;
+      rc.y = 52;
+      rc.w = 395;
+      rc.h = 424;
       EnableAntiAlias(hdc, ENABLE);
       DrawRoundRect(hdc, &rc, 5);     // 绘制接收区的外框
       EnableAntiAlias(hdc, DISABLE);
@@ -612,13 +615,13 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       SetFont(hdc, defaultFont);
       SetTextColor(hdc, MapRGB(hdc, 0x16, 0x9B, 0xD5));
 
-      rc.x = 157;
-      rc.y = 74;
-      rc.w = 39;
-      rc.h = 24;
+      rc.x = 400;
+      rc.y = 148;
+      rc.w = 98;
+      rc.h = 48;
       DrawText(hdc, L"IP:", -1, &rc, DT_RIGHT|DT_TOP);
 
-      rc.y = 98;
+      rc.y = 196;
       DrawText(hdc, L"端口:", -1, &rc, DT_RIGHT|DT_TOP);
       
       EndPaint(hwnd, &ps);

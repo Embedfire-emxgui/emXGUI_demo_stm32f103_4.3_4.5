@@ -269,7 +269,7 @@ void CListMenu::draw_icon_obj(HDC hdc, struct __x_obj_item *obj, u32 flag, u32 s
     rc0.w = rc.w;
     rc0.h = rc.h * 1 / 3;
     rc0.x = rc.x;
-    rc0.y = rc.y + rc.h - rc0.h - 6;
+    rc0.y = rc.y + rc.h - rc0.h;
     DrawText(hdc, obj->pszText, -1, &rc0, DT_VCENTER | DT_CENTER);
 
 }

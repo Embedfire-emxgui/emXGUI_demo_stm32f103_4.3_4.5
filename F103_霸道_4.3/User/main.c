@@ -24,6 +24,8 @@
 #include "./led/bsp_led.h"
 #include "./key/bsp_key.h"   
 #include "./usart/bsp_usart.h"
+#include "./beep/bsp_beep.h"  
+#include "board.h"
 /* FreeRTOS头文件 */
 #include "FreeRTOS.h"
 #include "task.h"
@@ -80,9 +82,9 @@ int main(void)
    /* 创建AppTaskCreate任务 */
   xReturn = xTaskCreate((TaskFunction_t )GUI_Thread_Entry,  /* 任务入口函数 */
                         (const char*    )"gui",/* 任务名字 */
-                        (uint16_t       )1*1024/4,  /* 任务栈大小 */
+                        (uint16_t       )1024/4,  /* 任务栈大小 */
                         (void*          )NULL,/* 任务入口函数参数 */
-                        (UBaseType_t    )3, /* 任务的优先级 */
+                        (UBaseType_t    )10, /* 任务的优先级 */
                         (TaskHandle_t*  )NULL);/* 任务控制块指针 */ 
   /* 启动任务调度 */           
   if(pdPASS == xReturn)
@@ -134,9 +136,12 @@ void FSMC_InitLCD(void);
 static void BSP_Init(void)
 {
 	/* 硬件BSP初始化统统放在这里，比如LED，串口，LCD等 */
-    
+  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+  
 	/* LED 端口初始化 */
 	LED_GPIO_Config();	
+  /* 蜂鸣器初始化 */
+  BEEP_GPIO_Config();
 	
 	/* usart 端口初始化 */
   Debug_USART_Config();
@@ -147,6 +152,10 @@ static void BSP_Init(void)
 
   /* KEY 端口初始化 */
   Key_GPIO_Config();
+  
+  /* 配置RTC秒中断优先级 */
+  struct rtc_time systmtime = {0, 41, 10, 7, 11, 2019, 0};
+	RTC_CheckAndConfig(&systmtime);
 }
  
 

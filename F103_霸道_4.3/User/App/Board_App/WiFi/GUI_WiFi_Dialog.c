@@ -5,8 +5,7 @@
 #include "x_libc.h"
 #include "GUI_AppDef.h"
 #include "./WiFi/GUI_WiFi_Dialog.h"
-#include ".\WiFi\ESP8266\bsp_esp8266.h"
-#include "bsp_ov7725.h"
+#include "./WiFi/ESP8266/bsp_esp8266.h"
 
 int		number_input_box(int x, int y, int w, int h,
 							const WCHAR *pCaption,
@@ -266,12 +265,15 @@ static void Ent_ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
 		SetPenColor(hdc, MapRGB(hdc, 250, 250, 250));      //设置画笔色
 	}
   
+  SetPenSize(hdc, 2);
+
+  InflateRect(&rc, 0, -1);
+  
   for(int i=0; i<4; i++)
   {
     HLine(hdc, rc.x, rc.y, rc.w);
-    rc.y += 5;
+    rc.y += 9;
   }
-
 }
 
 // 重绘普通按钮
@@ -414,48 +416,48 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                   (TaskHandle_t*  )&wifi_task_handle);     /* 任务控制块指针 */
                       
       CreateWindow(BUTTON, L"O", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY |WS_OWNERDRAW|WS_VISIBLE,
-                  286, 4, 23, 23, hwnd, eID_BTN_EXIT, NULL, NULL); 
+                  740, 10, 36, 36, hwnd, eID_BTN_EXIT, NULL, NULL); 
 
-      rc.x = 262;
-      rc.y = 99;
-      rc.w = 54;
-      rc.h = 22;
+      rc.x = 642;
+      rc.y = 198;
+      rc.w = 135;
+      rc.h = 44;
       
       CreateWindow(BUTTON, L"连接", WS_TRANSPARENT | BS_NOTIFY|WS_VISIBLE|WS_OWNERDRAW,
                   rc.x,rc.y,rc.w,rc.h, hwnd, eID_BTN_STATE, NULL, NULL);
       
       /* 数据发送文本窗口 */
-      rc.w = 158;
-      rc.h = 117;
-      rc.x = 160;
-      rc.y = 122;
+      rc.w = 395;
+      rc.h = 234;
+      rc.x = 400;
+      rc.y = 244;
       CreateWindow(TEXTBOX, L"你好！这里是野火开发板 ^_^", WS_TRANSPARENT | WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_Send, NULL, NULL);
 
       /* 创建接收窗口 */
-      rc.w = 157;
-      rc.h = 194;
-      rc.x = 1;
-      rc.y = 26;
+      rc.w = 395;
+      rc.h = 382  ;
+      rc.x = 3;
+      rc.y = 52;
       Receive_Handle = CreateWindow(TEXTBOX, L"", WS_TRANSPARENT|WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_Receive, NULL, NULL);
       
-      rc.x = 281;
-      rc.y = 217;
-      rc.w = 35;
-      rc.h = 20;
+      rc.x = 703;
+      rc.y = 434;
+      rc.w = 88;
+      rc.h = 40;
       CreateWindow(BUTTON, L"发送", WS_TRANSPARENT | BS_NOTIFY|WS_VISIBLE|WS_OWNERDRAW,
                          rc.x,rc.y,rc.w,rc.h, hwnd, eID_BTN_SEND, NULL, NULL); 
                          
-      rc.x = 101;
-      rc.h = 20;
-      rc.w = 55;
-      rc.y = 217;
+      rc.x = 255;
+      rc.h = 40;
+      rc.w = 138 ;
+      rc.y = 434;
       CreateWindow(BUTTON, L"清空接收", WS_TRANSPARENT | BS_NOTIFY|WS_VISIBLE|WS_OWNERDRAW,
                          rc.x,rc.y,rc.w,rc.h, hwnd, eID_BTN_CLEAR, NULL, NULL); 
                          
-      rc.w = 120;
-      rc.h = 24;
-      rc.x = 199;
-      rc.y = 25;
+      rc.w = 300;
+      rc.h = 48;
+      rc.x = 480;
+      rc.y = 50;
       Temp_Handle = CreateWindow(TEXTBOX, L"embedfire2", WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_SSID, NULL, NULL);//
       SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);
       
@@ -464,29 +466,29 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);
 
       /* IP&端口文本窗口 */
-      rc.w = 28;
-      rc.h = 24;
-      rc.x = 199;
-      rc.y = 74;
+      rc.w = 70;
+      rc.h = 48;
+      rc.x = 480;
+      rc.y = 148;
       Temp_Handle = CreateWindow(TEXTBOX, L"192", WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemoteIP1, NULL, NULL);//
       SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);
 
-      OffsetRect(&rc, rc.w+3, 0);
+      OffsetRect(&rc, rc.w+8, 0);
       Temp_Handle = CreateWindow(TEXTBOX, L"168", WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemoteIP2, NULL, NULL);//
       SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);
 
-      OffsetRect(&rc, rc.w+3, 0);
+      OffsetRect(&rc, rc.w+8, 0);
       Temp_Handle = CreateWindow(TEXTBOX, L"000", WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemoteIP3, NULL, NULL);//
       SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);
 
-      OffsetRect(&rc, rc.w+3, 0);
+      OffsetRect(&rc, rc.w+8, 0);
       Temp_Handle = CreateWindow(TEXTBOX, L"003", WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemoteIP4, NULL, NULL);//
       SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);
 
-      rc.w = 55;
-      rc.h = 22;
-      rc.x = 199;
-      rc.y = 99;
+      rc.w = 138;
+      rc.h = 44;
+      rc.x = 480;
+      rc.y = 198;
       Temp_Handle = CreateWindow(TEXTBOX, L"8080", WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemotePort, NULL, NULL);//
       SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);
 
@@ -509,8 +511,8 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         ops.Flag =MB_ICONERROR;
         ops.pButtonText =btn;
         ops.ButtonCount =2;
-        RC.w = 160;
-        RC.h = 120;
+        RC.w = 300;
+        RC.h = 200;
         RC.x = (GUI_XSIZE - RC.w) >> 1;
         RC.y = (GUI_YSIZE - RC.h) >> 1;
         SelectDialogBox(hwnd, RC, L"连接失败\n请检查连接。", L"错误", &ops);    // 显示错误提示框                                                       // 发送关闭窗口的消息
@@ -531,17 +533,17 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       SetBrushColor(hdc, MapRGB(hdc, 255, 255, 255));
       FillRect(hdc, &rc);
 
-      rc.h = 25;
+      rc.h = 50 ;
       GradientFillRect(hdc, &rc, MapRGB(hdc, 1, 218, 254), MapRGB(hdc, 1, 168, 255), FALSE);
       SetTextColor(hdc, MapRGB(hdc, 255, 255, 255));
       DrawText(hdc, L"Wi-Fi", -1, &rc, DT_VCENTER|DT_CENTER);
 
       SetPenColor(hdc, MapRGB(hdc, 121, 121, 121));
 
-      rc.x = 1;
-      rc.y = 26;
-      rc.w = 157;
-      rc.h = 213;
+      rc.x = 3;
+      rc.y = 52;
+      rc.w = 395;
+      rc.h = 426;
       EnableAntiAlias(hdc, ENABLE);
       DrawRoundRect(hdc, &rc, 5);     // 绘制接收区的外框
       EnableAntiAlias(hdc, DISABLE);
@@ -549,21 +551,21 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       SetFont(hdc, defaultFont);
       SetTextColor(hdc, MapRGB(hdc, 0x16, 0x9B, 0xD5));
       
-      rc.w = 38;
-      rc.h = 24;
-      rc.x = 160;
-      rc.y = 26;
-      DrawText(hdc, L"Wi-Fi:", -1, &rc, DT_RIGHT|DT_TOP);
+      rc.w = 81;
+      rc.h = 48;
+      rc.x = 400;
+      rc.y = 52;
+      DrawText(hdc, L"Wi-Fi:", -1, &rc, DT_RIGHT|DT_VCENTER);
       
-      rc.y = 50;
-      DrawText(hdc, L"密码:", -1, &rc, DT_RIGHT|DT_TOP);
+      rc.y = 100;
+      DrawText(hdc, L"密码:", -1, &rc, DT_RIGHT|DT_VCENTER);
       
 
-      rc.y = 74;
-      DrawText(hdc, L"IP:", -1, &rc, DT_RIGHT|DT_TOP);
+      rc.y = 148;
+      DrawText(hdc, L"IP:", -1, &rc, DT_RIGHT|DT_VCENTER);
 
-      rc.y = 98;
-      DrawText(hdc, L"端口:", -1, &rc, DT_RIGHT|DT_TOP);
+      rc.y = 196;
+      DrawText(hdc, L"端口:", -1, &rc, DT_RIGHT|DT_VCENTER);
       
       EndPaint(hwnd, &ps);
       break;

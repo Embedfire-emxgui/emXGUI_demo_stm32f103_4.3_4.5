@@ -1,4 +1,4 @@
-#include "bsp_sccb.h"
+#include "./camera/ov7725/bsp_sccb.h"
 
 #define DEV_ADR  ADDR_OV7725 			 /*设备地址定义*/
 

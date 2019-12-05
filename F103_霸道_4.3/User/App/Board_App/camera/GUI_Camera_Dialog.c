@@ -1,11 +1,7 @@
 #include <emXGUI.h>
 #include <string.h>
-#include "Widget.h"
-#include "bsp_ov7725.h"
+#include "./camera/ov7725/bsp_ov7725.h"
 #include "x_libc.h"
-
-
-
 
 TaskHandle_t h_autofocus;
 BOOL update_flag = 0;//帧率更新标志
@@ -44,7 +40,7 @@ static void Update_Dialog()
   /* ov7725 场信号线初始化 */
   Ov7725_vsync = 0;
   VSYNC_Init();
-  
+  RECT rc = {(800-320)/2, (480-240)/2, 320, 240};
   
 	while(1) //线程已创建了
 	{
@@ -55,7 +51,7 @@ static void Update_Dialog()
     OV7725_Read_Frame(cam_buff);    // 读一帧图像
     fps ++;                         // 帧率自加
 
-    InvalidateRect(Cam_hwnd,NULL,FALSE);
+    InvalidateRect(Cam_hwnd, &rc, FALSE);
     
     OV7725_State = 2;
 	}
@@ -66,7 +62,7 @@ extern int MessageDialogBox(HWND Phwnd, RECT rc,const WCHAR *pText,const WCHAR *
 */
 static LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-  static int old_fps = 0;
+//  static int old_fps = 0;
 
   switch(msg)
   {
@@ -109,7 +105,7 @@ static LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 //        RC.y =(GUI_YSIZE - RC.h) >> 1;
 //        MessageDialogBox(hwnd, RC, L"没有检测到OV7725摄像头，\n请重新检查连接。", L"错误", &ops); 
         OV7725_State = 1;     // 没有检测到摄像头
-        SetTimer(hwnd,1,1,TMR_START,NULL);  
+        SetTimer(hwnd,1,1,TMR_START|TMR_SINGLE,NULL);  
 //        PostCloseMessage(hwnd);
         break;
       }
@@ -139,11 +135,11 @@ static LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         ops.Flag =MB_ICONERROR;
         ops.pButtonText =btn;
         ops.ButtonCount =2;
-        RC.w = 200;
-        RC.h = 120;
+        RC.w = 300;
+        RC.h = 200;
         RC.x = (GUI_XSIZE - RC.w) >> 1;
         RC.y = (GUI_YSIZE - RC.h) >> 1;
-        GUI_DEBUG(" 按下了第%d个按钮", MessageDialogBox(hwnd, RC, L"没有检测到OV7725摄像头，\n请重新检查连接。", L"错误", &ops));
+        SelectDialogBox(hwnd, RC, L"没有检测到OV7725摄像头，\n请重新检查连接。", L"错误", &ops);
         OV7725_State = 1;     // 没有检测到摄像头
         PostCloseMessage(hwnd);
       }
@@ -155,7 +151,6 @@ static LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 //      SURFACE *pSurf;
       HDC hdc_mem;
       HDC hdc;
-      WCHAR wbuf[20];
       RECT rc;
       
       hdc = BeginPaint(hwnd,&ps);
@@ -163,16 +158,15 @@ static LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       if(OV7725_State != 2)
       {
         SetTextColor(hdc,MapRGB(hdc,250,250,250));
-        SetBrushColor(hdc,MapRGB(hdc,50,0,0));
-        SetPenColor(hdc,MapRGB(hdc,250,0,0));
-//        SetTimer(hwnd,1,20,TMR_SINGLE,NULL);  
+        SetBrushColor(hdc,MapRGB(hdc,50,50,50));
+
+        FillRect(hdc, &rc);
         DrawText(hdc,L"正在初始化摄像头\r\n\n请等待...",-1,&rc,DT_VCENTER|DT_CENTER|DT_BKGND);
       }              
       if(OV7725_State == 2)
       {   
-        
         hdc_mem =CreateDC(pSurf,NULL);
-        BitBlt(hdc, 0, 0, 320, 240, hdc_mem, 0 , 0, SRCCOPY);
+        BitBlt(hdc, (GUI_XSIZE - 320) / 2, (GUI_YSIZE - 320) / 2, 320, 240, hdc_mem, 0 , 0, SRCCOPY);
 
         DeleteDC(hdc_mem);
       }
@@ -200,7 +194,7 @@ static LRESULT WinProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_DESTROY:
     {
-      old_fps = 0;
+//      old_fps = 0;
       fps = 0;
       
       if (OV7725_State != 1)
@@ -229,7 +223,7 @@ void	GUI_Camera_DIALOG(void)
 
 	wcex.Tag = WNDCLASS_TAG;  
   
-  cam_buff = (uint16_t *)GUI_VMEM_Alloc(LCD_XSIZE*LCD_YSIZE*2);
+  cam_buff = (uint16_t *)GUI_VMEM_Alloc(320*240*2);
   
 	wcex.Style = CS_HREDRAW | CS_VREDRAW;
 	wcex.lpfnWndProc = WinProc; //设置主窗口消息处理的回调函数.

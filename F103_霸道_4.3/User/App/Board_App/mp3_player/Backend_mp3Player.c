@@ -16,7 +16,7 @@
 */
 #include <stdio.h>
 #include <string.h>
-#include  "VS1053.h"
+#include  "./mp3_player/vs1053/VS1053.h"
 #include "ff.h" 
 #include "./mp3_player/Backend_mp3Player.h"
 #include "./mp3_player/Backend_musiclist.h"
@@ -24,6 +24,7 @@
 #include "x_libc.h"
 #include "flac.h"
 #include "./mp3_player/GUI_MUSICPLAYER_DIALOG.h"
+#include "./dwt_delay/core_delay.h" 
 
 //#define Delay_ms GUI_msleep
 void FileSystem_Test(void);

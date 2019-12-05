@@ -18,7 +18,7 @@
 
 
 #include "board.h"
-#include "./dht11/bsp_dht11.h"
+#include "./T_RH/dht11/bsp_dht11.h"
 #include "./dwt_delay/core_delay.h" 
 
 /* 可以在下面的宏定义中把后面的延时函数替换换SysTick的延时函数，就是想用那个就换成那个的 */

@@ -72,16 +72,16 @@ static void button_owner_draw(DRAWITEM_HDR *ds) //绘制一个按钮外观
 	//	DrawCircle(hdc,rc.x+rc.w/2,rc.x+rc.w/2,rc.w/2); //画矩形外框
 
 	  /* 使用控制图标字体 */
-	SetFont(hdc, controlFont_32);
+  HFONT controlFont_48;
+  controlFont_48 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_48);
+	SetFont(hdc, controlFont_48);
 	//  SetTextColor(hdc,MapRGB(hdc,255,255,255));
 
 	GetWindowText(ds->hwnd, wbuf, 128); //获得按钮控件的文字
 
 	DrawText(hdc, wbuf, -1, &rc, DT_VCENTER | DT_CENTER);//绘制文字(居中对齐方式)
 
-
-  /* 恢复默认字体 */
-	SetFont(hdc, defaultFont);
+  DeleteFont(controlFont_48);
 
 }
 static void exit_owner_draw(DRAWITEM_HDR *ds) //绘制一个按钮外观
@@ -130,9 +130,11 @@ static void exit_owner_draw(DRAWITEM_HDR *ds) //绘制一个按钮外观
 	//  
 	//  FillCircle(hdc,rc.x+rc.w/2,rc.x+rc.w/2,rc.w/2); //用矩形填充背景FillCircle
 	//	DrawCircle(hdc,rc.x+rc.w/2,rc.x+rc.w/2,rc.w/2); //画矩形外框
-
+  
+  HFONT controlFont_48;
+  controlFont_48 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_48);
 	  /* 使用控制图标字体 */
-	SetFont(hdc, controlFont_16);
+	SetFont(hdc, controlFont_48);
 	//  SetTextColor(hdc,MapRGB(hdc,255,255,255));
 
 	GetWindowText(ds->hwnd, wbuf, 128); //获得按钮控件的文字
@@ -143,6 +145,8 @@ static void exit_owner_draw(DRAWITEM_HDR *ds) //绘制一个按钮外观
   /* 恢复默认字体 */
 	SetFont(hdc, defaultFont);
    DrawText(hdc, L"返回", -1, &rc, DT_VCENTER);
+   
+   DeleteFont(controlFont_48);
 }
 //LIST
 
@@ -208,21 +212,21 @@ static LRESULT Win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          wnd = CreateWindow(&wcex_ListMenu,
                       L"ListMenu1",
                       WS_VISIBLE | LMS_ICONFRAME|LMS_PAGEMOVE,
-                      rc.x + 30, rc.y + 20, rc.w - 60, rc.h-20,
+                      rc.x + 48, rc.y + 48, rc.w - 96, rc.h-48,
                       hwnd,
                       ID_LIST_1,
                       NULL,
                       &cfg);         
          SendMessage(wnd, MSG_SET_SEL, play_index, 0);
          wnd= CreateWindow(BUTTON, L"L", BS_FLAT | BS_NOTIFY | WS_OWNERDRAW |WS_VISIBLE,
-                       2, (rc.h) / 2, 30, 30, hwnd, ICON_VIEWER_ID_PREV, NULL, NULL);
-         SetWindowFont(wnd, controlFont_48); 
+                       2, (rc.h) / 2, 48, 48, hwnd, ICON_VIEWER_ID_PREV, NULL, NULL);
+
 	      wnd = CreateWindow(BUTTON, L"K", BS_FLAT | BS_NOTIFY | WS_OWNERDRAW | WS_VISIBLE,
-        rc.w - 30, (rc.h ) / 2, 30, 30, hwnd, ICON_VIEWER_ID_NEXT, NULL, NULL);
-         SetWindowFont(wnd, controlFont_16);    
+        rc.w - 48, (rc.h ) / 2, 48, 48, hwnd, ICON_VIEWER_ID_NEXT, NULL, NULL);
+  
          
          CreateWindow(BUTTON, L"F", BS_FLAT | BS_NOTIFY|WS_OWNERDRAW |WS_VISIBLE,
-                        0, 0, 35, 30, hwnd, ID_EXIT, NULL, NULL);         
+                        0, 2, 100, 48, hwnd, ID_EXIT, NULL, NULL);         
          
          
          break;
@@ -253,9 +257,9 @@ static LRESULT Win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          FillRect(hdc, &rc);  
          //DrawBitmap(hdc,0,0,&bm_0,NULL);   
          rc.x = 0;
-         rc.y = 0;
-         rc.w = 300;
-         rc.h = 20;
+         rc.y = 5;
+         rc.w = GUI_XSIZE;
+         rc.h = 30;
          SetTextColor(hdc, MapRGB(hdc, 250, 250, 250));
          DrawText(hdc, L"播放列表", -1, &rc, DT_VCENTER|DT_CENTER);
          EndPaint(hwnd, &ps);
@@ -305,17 +309,13 @@ static LRESULT Win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          }   
          break;
       }      
-      case WM_CLOSE: //窗口关闭时，会自动产生该消息.
-		{         
-         GUI_VMEM_Free(menu_list);
-         GUI_VMEM_Free(wbuf);
-         enter_flag = 0;
-         SetForegroundWindow(MusicPlayer_hwnd);
-			return DestroyWindow(hwnd); //调用DestroyWindow函数销毁窗口，该函数会使主窗口结束并退出消息循环;否则窗口将继续运行.
-		} 
+
     //关闭窗口消息处理case
       case WM_DESTROY:
-      {               
+      {     
+         GUI_VMEM_Free(menu_list);
+         GUI_VMEM_Free(wbuf);
+         enter_flag = 0;          
         return PostQuitMessage(hwnd);	    // 退出消息循环
       }
     
@@ -342,7 +342,7 @@ void GUI_MusicList_DIALOG(void)
 	wcex.hCursor = NULL;//LoadCursor(NULL, IDC_ARROW);
 
 	//创建主窗口
-	hwnd = CreateWindowEx(WS_EX_NOFOCUS,
+	hwnd = CreateWindowEx(WS_EX_NOFOCUS|WS_EX_FRAMEBUFFER,
                          &wcex,
                          L"GUI_MusicList_DIALOG",
                          WS_CLIPSIBLINGS,

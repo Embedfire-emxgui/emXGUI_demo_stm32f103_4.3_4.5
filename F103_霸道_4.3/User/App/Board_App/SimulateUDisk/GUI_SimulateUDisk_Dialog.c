@@ -10,10 +10,6 @@
 #include 	"usb_lib.h"
 #include 	"usb_pwr.h"     
 
-static HDC hdc_bk;
-static HDC hdc_btn_press;
-static HDC hdc_btn;
-
 //退出按钮重绘制
 static void _ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
 {
@@ -40,12 +36,15 @@ static void _ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
 		SetPenColor(hdc, MapRGB(hdc, 250, 250, 250));      //设置画笔色
 	}
   
+  SetPenSize(hdc, 2);
+
+  InflateRect(&rc, 0, -1);
+  
   for(int i=0; i<4; i++)
   {
     HLine(hdc, rc.x, rc.y, rc.w);
-    rc.y += 5;
+    rc.y += 9;
   }
-
 }
 
 static void btn_owner_draw(DRAWITEM_HDR *ds) //绘制一个按钮外观
@@ -62,18 +61,26 @@ static void btn_owner_draw(DRAWITEM_HDR *ds) //绘制一个按钮外观
   GetClientRect(hwnd, &rc_tmp);//得到控件的位置
   WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
 
-  BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_bk, rc_tmp.x, rc_tmp.y, SRCCOPY);
+  EnableAntiAlias(hdc, TRUE);
+  
+  SetBrushColor(hdc, MapRGB(hdc, 66, 254, 255));
+  FillRoundRect(hdc, &rc, MIN(rc.h, rc.w));
 
   if (ds->State & BST_PUSHED)
   { //按钮是按下状态
-    BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_btn_press, 0, 0, SRCCOPY);
+    OffsetRect(&rc, 1, 1);
     SetTextColor(hdc, MapRGB(hdc, 200, 200, 200));
   }
   else
   { //按钮是弹起状态
-    BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_btn, 0, 0, SRCCOPY);
     SetTextColor(hdc, MapRGB(hdc, 255, 255, 255));
   }
+  
+  InflateRect(&rc, -5, -5);
+  SetBrushColor(hdc, MapRGB(hdc, 13, 148, 214));
+  FillRoundRect(hdc, &rc, MIN(rc.h, rc.w));
+  
+  EnableAntiAlias(hdc, FALSE);
   
   GetWindowText(ds->hwnd, wbuf, 128); //获得按钮控件的文字
   
@@ -108,68 +115,10 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       GetClientRect(hwnd, &rc);
                       
       CreateWindow(BUTTON, L"O", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY |WS_OWNERDRAW|WS_VISIBLE,
-                  286, 10, 23, 23, hwnd, eID_SUD_EXIT, NULL, NULL);
+                  740, 25, 36, 36, hwnd, eID_SUD_EXIT, NULL, NULL);
 
       CreateWindow(BUTTON, L"连接", WS_TRANSPARENT| BS_NOTIFY | WS_VISIBLE | BS_3D|WS_OWNERDRAW,
-                  123, 197,  71,  30, hwnd, eID_SUD_LINK, NULL, NULL);    // 使用时钟的按钮背景
-      
-      BOOL res;
-      u8 *jpeg_buf;
-      u32 jpeg_size;
-      JPG_DEC *dec;
-      res = RES_Load_Content(GUI_UDISK_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);
-//      res = FS_Load_Content(GUI_UDISK_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);
-      hdc_bk = CreateMemoryDC(SURF_SCREEN, GUI_XSIZE, GUI_YSIZE);
-      if(res)
-      {
-       /* 根据图片数据创建JPG_DEC句柄 */
-       dec = JPG_Open(jpeg_buf, jpeg_size);
-
-       /* 绘制至内存对象 */
-       JPG_Draw(hdc_bk, 0, 0, dec);
-
-       /* 关闭JPG_DEC句柄 */
-       JPG_Close(dec);
-      }
-      /* 释放图片内容空间 */
-      RES_Release_Content((char **)&jpeg_buf);
-      
-      u8 *pic_buf;
-      u32 pic_size;
-      PNG_DEC *png_dec;
-      BITMAP png_bm;
-      
-
-      /* 创建 HDC */
-      hdc_btn = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888, 71, 30);
-      ClrDisplay(hdc_btn, NULL, 0);
-      res = RES_Load_Content(GUI_UDISK_BTN_PIC, (char**)&pic_buf, &pic_size);
-//            res = FS_Load_Content(GUI_UDISK_BTN_PIC, (char**)&pic_buf, &pic_size);
-      if(res)
-      {
-        png_dec = PNG_Open(pic_buf, pic_size);
-        PNG_GetBitmap(png_dec, &png_bm);
-        DrawBitmap(hdc_btn, 0, 0, &png_bm, NULL);
-        PNG_Close(png_dec);
-      }
-      /* 释放图片内容空间 */
-      RES_Release_Content((char **)&pic_buf);
-      
-      /* 创建 HDC */
-      hdc_btn_press = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888, 71, 30);
-      ClrDisplay(hdc_btn_press, NULL, 0);
-      res = RES_Load_Content(GUI_UDISK_BTN_PRESS_PIC, (char**)&pic_buf, &pic_size);
-//      res = FS_Load_Content(GUI_UDISK_BTN_PRESS_PIC, (char**)&pic_buf, &pic_size);
-      if(res)
-      {
-        png_dec = PNG_Open(pic_buf, pic_size);
-        PNG_GetBitmap(png_dec, &png_bm);
-        DrawBitmap(hdc_btn_press, 0, 0, &png_bm, NULL);
-        PNG_Close(png_dec);
-      }
-      /* 释放图片内容空间 */
-      RES_Release_Content((char **)&pic_buf);
-
+                  317, 393, 166, 70, hwnd, eID_SUD_LINK, NULL, NULL);    // 使用时钟的按钮背景
 
       break;
     } 
@@ -199,30 +148,36 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_ERASEBKGND:
     {
       HDC hdc = (HDC)wParam;
-      RECT rc =*(RECT*)lParam;
+      RECT rc_title = {0, 0, GUI_XSIZE, 80};
+      RECT rc_title_grad = {0, 80, GUI_XSIZE, 5};
+      RECT rc_lyric = {0, 80, GUI_XSIZE, 400};
+//      RECT rc_control = {0, 396, GUI_XSIZE, 84};
+      SetBrushColor(hdc, MapRGB(hdc, 1, 218, 254));
+      FillRect(hdc, &rc_title);
+//         GradientFillRect(hdc, &rc_title, MapRGB(hdc, 1, 218, 254), MapRGB(hdc, 1, 168, 255), FALSE);
 
-      // GetClientRect(hwnd, &rc);
-      // SetBrushColor(hdc, MapRGB(hdc, 0, 0, 0));
-      // FillRect(hdc, &rc);
-      
-      BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_bk, rc.x, rc.y, SRCCOPY);    // 使用与时钟APP相同的背景
+      SetFont(hdc, defaultFont);
+      SetTextColor(hdc, MapRGB(hdc, 50, 50, 50));
+      DrawText(hdc, L"外部FLASH模拟U盘", -1, &rc_title, DT_VCENTER|DT_CENTER);
 
-      return TRUE;
+      SetBrushColor(hdc, MapRGB(hdc, 240, 240, 240));
+      FillRect(hdc, &rc_lyric);
+      GradientFillRect(hdc, &rc_title_grad, MapRGB(hdc, 150, 150, 150), MapRGB(hdc, 220, 220, 220), TRUE);
+
+      return FALSE;
     }
 
     case WM_PAINT:
     {
       HDC hdc;
       PAINTSTRUCT ps;
-      RECT rc  = {0, 45, GUI_XSIZE, 150};
-      RECT rc1 = {50, 0, 220, 40};
+      RECT rc  = {0, 150, GUI_XSIZE, 200};
 
       hdc = BeginPaint(hwnd, &ps);
       
       SetFont(hdc, defaultFont); 
-      SetTextColor(hdc, MapRGB(hdc, 250, 250, 250));
-      DrawText(hdc, L"外部FLASH模拟U盘", -1, &rc1, DT_VCENTER|DT_CENTER);//绘制文字(居中对齐方式)
-      SetTextInterval(hdc, -1, 16);
+      SetTextColor(hdc, MapRGB(hdc, 50, 50, 50));
+      SetTextInterval(hdc, -1, 28);
       DrawText(hdc, L"本应用使用外部FLASH的后10M模拟U盘\r\n请在点击连接前使用Micro USB\r\n数据线连接开发板的J24到电脑！", -1, &rc, DT_VCENTER|DT_CENTER);//绘制文字(居中对齐方式)
    
       EndPaint(hwnd, &ps);
@@ -296,10 +251,6 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_DESTROY:
     { 
-      DeleteDC(hdc_bk);
-      DeleteDC(hdc_btn);
-      DeleteDC(hdc_btn_press);
-      
       USB_Cable_Config(DISABLE);
       RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, DISABLE);
 

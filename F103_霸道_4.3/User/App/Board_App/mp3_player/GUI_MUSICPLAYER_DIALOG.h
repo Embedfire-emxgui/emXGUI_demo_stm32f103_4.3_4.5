@@ -19,8 +19,6 @@
 #define ID_TB2               0x1302
 #define ID_TB5               0x1305
 
-#define GUI_RGB_BACKGROUNG_PIC      "musicdesktop.jpg"
-
 typedef struct{
    char *icon_name;//图标名
    RECT rc;        //位置信息

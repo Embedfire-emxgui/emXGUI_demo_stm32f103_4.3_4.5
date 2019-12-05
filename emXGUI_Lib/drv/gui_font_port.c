@@ -57,9 +57,6 @@ HFONT iconFont_100 =NULL;
 /* 默认英文字体 */
 HFONT defaultFontEn = NULL;
 
-/* 控制图标字体 */
-HFONT controlFont_64 =NULL;
-
 /* 用于标记是否有资源文件无法找到 */
 BOOL res_not_found_flag = FALSE;
 
@@ -301,7 +298,7 @@ HFONT GUI_Init_Extern_Font(void)
    /* 使用流设备加载字体，按需要读取 */
   {
     defaultFont    = GUI_Init_Extern_Font_Stream(GUI_DEFAULT_EXTERN_FONT); 
-    controlFont_64 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_64);
+//    controlFont_64 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_64);
     iconFont_100   = GUI_Init_Extern_Font_Stream(GUI_ICON_FONT_100);    
   }
 #endif 

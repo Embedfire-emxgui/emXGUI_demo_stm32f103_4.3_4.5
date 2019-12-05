@@ -1,4 +1,4 @@
-#include ".\WiFi\ESP8266\bsp_esp8266.h"
+#include "./WiFi/ESP8266/bsp_esp8266.h"
 #include <stdio.h>  
 #include <string.h>  
 #include <stdbool.h>

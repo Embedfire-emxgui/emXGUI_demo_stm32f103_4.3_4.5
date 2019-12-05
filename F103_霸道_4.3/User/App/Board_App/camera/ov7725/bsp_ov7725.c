@@ -1,5 +1,5 @@
-#include "bsp_ov7725.h"
-#include "bsp_sccb.h"
+#include "./camera/ov7725/bsp_ov7725.h"
+#include "./camera/ov7725/bsp_sccb.h"
 #include "board.h"
 //#include "bsp_ili9341_lcd.h"
 

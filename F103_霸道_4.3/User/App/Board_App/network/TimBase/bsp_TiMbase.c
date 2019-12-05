@@ -14,7 +14,7 @@
 *
 ******************************************************************************
 */ 
-#include "..\network\TimBase\bsp_TiMbase.h" 
+#include ".\network\TimBase\bsp_TiMbase.h" 
 
 /// TIM2中断优先级配置
 void TIM2_NVIC_Configuration(void)

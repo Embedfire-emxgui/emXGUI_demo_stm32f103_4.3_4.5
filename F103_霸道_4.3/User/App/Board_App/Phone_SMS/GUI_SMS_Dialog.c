@@ -3,11 +3,10 @@
 #include <stdio.h>
 #include <math.h>
 #include "x_libc.h"
-#include <stdlib.h>
 #include "GUI_AppDef.h"
 #include "emXGUI_JPEG.h"
 #include "emxgui_png.h"
-#include "./sim900a/bsp_sim900a.h"
+#include "./Phone_SMS/sim900a/bsp_sim900a.h"
 
 #define COLOR_SMS_BACK_GROUND         50,50,50
 extern int SelectDialogBox(HWND hwndParent, RECT rc, const WCHAR *pText, const WCHAR *pCaption, const MSGBOX_OPTIONS *ops);
@@ -178,11 +177,14 @@ static void SMS_ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
 		SetPenColor(hdc, MapRGB(hdc, 250, 250, 250));      //设置画笔色
 	}
 
+  SetPenSize(hdc, 2);
+
+  InflateRect(&rc, 0, -1);
   
   for(int i=0; i<4; i++)
   {
     HLine(hdc, rc.x, rc.y, rc.w);
-    rc.y += 5;
+    rc.y += 9;
   }
 #endif
 }
@@ -252,6 +254,7 @@ static void Fillet_Textbox_OwnerDraw(DRAWITEM_HDR *ds) //绘制一个按钮外观
 	DrawText(hdc, wbuf, -1, &rc, DT_VCENTER | DT_CENTER);//绘制文字(居中对齐方式)
 }
 
+#if 0
 /*
  * @brief  重绘显示亮度的透明文本
  * @param  ds:	自定义绘制结构体
@@ -276,7 +279,7 @@ static void Brigh_Textbox_OwnerDraw(DRAWITEM_HDR *ds) //绘制一个按钮外观
 	rc.w -= 45;
 	DrawText(hdc, wbuf, -1, &rc, DT_VCENTER|DT_CENTER);//绘制文字(居中对齐方式)
 }
-
+#endif
 /*
  * @brief  重绘列表
  * @param  ds:	自定义绘制结构体
@@ -361,7 +364,7 @@ static void listbox_owner_draw(DRAWITEM_HDR *ds)
       /* 有时间,把电话号码和时间拆开 */
       x_wstrcpy(Time, Temp+1);
       *Temp = '\0';
-//      DrawText(hdc,Time,-1,&rc,DT_SINGLELINE|DT_RIGHT|DT_VCENTER);     // 显示时间(屏幕过小不显示时间)
+      DrawText(hdc,Time,-1,&rc,DT_SINGLELINE|DT_RIGHT|DT_VCENTER);     // 显示时间
     }
     
 		DrawText(hdc,wbuf,-1,&rc,DT_SINGLELINE|DT_LEFT|DT_VCENTER);      // 显示电话号码
@@ -396,14 +399,14 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       //InflateRectEx(&rc, -3, -112, -3, -101);
       //MakeMatrixRect(m_rc, &rc, 0, 0, 3, 4);
 	    
-      CreateWindow(BUTTON, L"O",	WS_VISIBLE|WS_OWNERDRAW|WS_TRANSPARENT, 295, 10, 23, 23, hwnd, eID_SMS_EXIT, NULL, NULL);
-      CreateWindow(BUTTON, L"清除",	WS_VISIBLE|WS_OWNERDRAW, 247, 215, 33, 22, hwnd, eID_SMS_CLEAR, NULL, NULL);
-      CreateWindow(BUTTON, L"删除全部短信",	WS_VISIBLE|WS_OWNERDRAW, 164, 215, 77, 22, hwnd, eID_SMS_DEL,  NULL, NULL);
-      CreateWindow(BUTTON, L"发送", WS_VISIBLE|WS_OWNERDRAW, 285, 215, 33, 22, hwnd, eID_SMS_SEND, NULL, NULL);
-      CreateWindow(TEXTBOX, L"这里显示内容", WS_VISIBLE, 164, 35, 153, 177, hwnd, eID_SMS_CONTENT, NULL, NULL);
+      CreateWindow(BUTTON, L"O",	WS_VISIBLE|WS_OWNERDRAW|WS_TRANSPARENT, 740, 22, 36, 36, hwnd, eID_SMS_EXIT, NULL, NULL);
+      CreateWindow(BUTTON, L"清除",	WS_VISIBLE|WS_OWNERDRAW, 590, 433, 84, 40, hwnd, eID_SMS_CLEAR, NULL, NULL);
+      CreateWindow(BUTTON, L"删除全部短信",	WS_VISIBLE|WS_OWNERDRAW, 395, 433, 160, 40, hwnd, eID_SMS_DEL,  NULL, NULL);
+      CreateWindow(BUTTON, L"发送", WS_VISIBLE|WS_OWNERDRAW, 710, 433, 84, 40, hwnd, eID_SMS_SEND, NULL, NULL);
+      CreateWindow(TEXTBOX, L"这里显示内容", WS_VISIBLE, 390, 70, 410, 354, hwnd, eID_SMS_CONTENT, NULL, NULL);
       SendMessage(GetDlgItem(hwnd, eID_SMS_CONTENT), TBM_SET_TEXTFLAG, 0, DT_TOP | DT_LEFT | DT_BKGND | DT_WORDBREAK);
-      CreateWindow(TEXTBOX, L"", WS_VISIBLE | WS_OWNERDRAW, 191, 7, 100, 22, hwnd, eID_SMS_NUMBER, NULL, NULL);
-      CreateWindow(LISTBOX, L"SMS LIST", WS_VISIBLE | WS_BORDER | WS_OWNERDRAW, 3, 35, 160, 202, hwnd, eID_SMS_LIST, NULL, NULL);
+      CreateWindow(TEXTBOX, L"", WS_VISIBLE | WS_OWNERDRAW, 485, 18, 221, 40, hwnd, eID_SMS_NUMBER, NULL, NULL);
+      CreateWindow(LISTBOX, L"SMS LIST", WS_VISIBLE | WS_BORDER | WS_OWNERDRAW, 6, 70, 379, 402, hwnd, eID_SMS_LIST, NULL, NULL);
 //      SendMessage(GetDlgItem(hwnd, eID_SMS_LIST), LB_LOCKCURSEL, TRUE, 0);
       SetTimer(hwnd, 0, 1, TMR_START|TMR_SINGLE, NULL);
       SetTimer(hwnd, 1, 1000, TMR_START, NULL);
@@ -487,22 +490,22 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       else if (tmr_id == 2)
       {
         /* 初始化失败 */
-        RECT rc;
+        RECT RC;
         MSGBOX_OPTIONS ops;
         const WCHAR *btn[] = { L"确认",L"取消" };      //对话框内按钮的文字
 
         ops.Flag = MB_ICONERROR;
         ops.pButtonText = btn;
         ops.ButtonCount = 2;
-        rc.w = 160;
-        rc.h = 120;
-        rc.x = (GUI_XSIZE - rc.w) >> 1;
-        rc.y = (GUI_YSIZE - rc.h) >> 1;
-        SelectDialogBox(hwnd, rc, L"没有检测到GSM模块\n请重新检查连接。", L"错误", &ops);    // 显示错误提示框
+        RC.w = 300;
+        RC.h = 200;
+        RC.x = (GUI_XSIZE - RC.w) >> 1;
+        RC.y = (GUI_YSIZE - RC.h) >> 1;
+        SelectDialogBox(hwnd, RC, L"没有检测到GSM模块\n请重新检查连接。", L"错误", &ops);    // 显示错误提示框
         PostCloseMessage(hwnd);
       }
 
-      break; 
+      break;
     }
 	
 
@@ -543,7 +546,7 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
       HDC hdc;
       PAINTSTRUCT ps;
-      RECT rc = {146, 7, 40, 22};
+      RECT rc = {393, 21, 79, 34};
       hdc = BeginPaint(hwnd, &ps);
       
       SetBrushColor(hdc, MapRGB(hdc, 22, 155, 213));
@@ -554,10 +557,10 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       SetTextColor(hdc, MapRGB(hdc, 250, 250, 250));
       DrawText(hdc, L"联系人", -1, &rc, DT_VCENTER | DT_CENTER);    //绘制文字(居中对齐方式)
 
-      rc.x = 57;
-      rc.y = 7;
-      rc.w = 37;
-      rc.h = 19;
+      rc.x = 143;
+      rc.y = 17;
+      rc.w = 92;
+      rc.h = 38;
       DrawText(hdc, L"短信", -1, &rc, DT_VCENTER | DT_CENTER);    //绘制文字(居中对齐方式)
       
       EndPaint(hwnd, &ps);
@@ -628,8 +631,8 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
               ops.Flag = MB_ICONERROR;
               ops.pButtonText = btn;
               ops.ButtonCount = 2;
-              RC.w = 160;
-              RC.h = 120;
+              RC.w = 300;
+              RC.h = 200;
               RC.x = (GUI_XSIZE - RC.w) >> 1;
               RC.y = (GUI_YSIZE - RC.h) >> 1;
               

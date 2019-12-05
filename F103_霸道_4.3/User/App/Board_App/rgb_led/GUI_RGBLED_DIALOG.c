@@ -1,10 +1,10 @@
 #include "emXGUI.h"
 #include "x_libc.h"
-#include <string.h>
+
 #include "./led/bsp_led.h"  
 #include "GUI_AppDef.h"
-#include "GUI_RGBLED_DIALOG.h"
-#include "Widget.h"
+#include "./rgb_led/GUI_RGBLED_DIALOG.h"
+#include "./mp3_player/GUI_MUSICPLAYER_DIALOG.h"
 #include "emXGUI_JPEG.h"
 #include "emxgui_png.h"
 
@@ -18,10 +18,6 @@ extern const unsigned char RGBdesktop[];
 static COLORREF color_bg;       // 透明控件的背景颜色
 //static BITMAP RGBdesktop_0;
 /**********************分界线*********************/
-HDC hdc_bk = NULL;
-HDC hdc_rgbled_checked;
-HDC hdc_rgbled_slider;
-HDC hdc_rgbled_slider_btn;
 
 uint8_t SELECT_RGB = 0;
 
@@ -38,28 +34,27 @@ struct leddlg
    int colB_ctr;//硬件RGB灯控制位
 }leddlg_S={0, 0, 0, 0, 0, 0, 1, 1, 1};
 
-const icon_S GUI_RGBLED_Icon[18] = 
+icon_S GUI_RGBLED_Icon[18] = 
 {
-      {"tuichu",           {286, 10, 23, 23},   FALSE},    // 退出按键
-      {"biaotilan",        {50,0,220,36},       FALSE},    // APP标题栏
-      {"APPHouse",         {425,80,275,275},    FALSE},    // APP房子图标
-      {"hongdeng",         {34, 184,  36, 36},  FALSE},    // 红灯图标
-      {"lvdeng",           {143, 184, 36, 36},  FALSE},    // 绿灯图标
-      {"landeng",          {251, 184, 36, 36},  FALSE},    // 蓝灯图标
-      {"hongdengscrollbar",{40, 120, 240, 30},  FALSE},    // 红色滚动条
-      {"lvdengscrollbar",  {40, 120, 240, 30},  FALSE},    // 绿色滚动条
-      {"landengscrollbar", {40, 120, 240, 30},  FALSE},    // 蓝色滚动条 
+      {"tuichu",           {740, 22, 36, 36},       FALSE},//退出按键
+      {"biaotilan",        {100,0,600,80},      FALSE},//APP标题栏
+      {"APPHouse",         {425,80,275,275},      FALSE},//APP房子图标
+      {"hongdeng",         {105-12, 382-20, 80, 110},  FALSE},//红灯图标
+      {"lvdeng",           {372-12, 382-20, 80, 110},  FALSE},//绿灯图标
+      {"landeng",          {638-12, 382-20, 80, 110},  FALSE},//蓝灯图标
+      {"hongdengscrollbar",{101, 238, 600, 90},  FALSE},//红色滚动条
+      {"lvdengscrollbar",  {101, 238, 600, 90},  FALSE},//绿色滚动条
+      {"landengscrollbar", {101, 238, 600, 90},  FALSE},//蓝色滚动条 
       
-      {"100",      {123, 68, 77, 41}, FALSE},        // 文字-百分比
-      {"I",        {44,  70, 24, 24}, FALSE},       // 文字-小灯
-      {"I",        {241, 66, 32, 32}, FALSE},       // 文字-大灯
+      {"100",    {307, 113, 185, 72}, FALSE},   //文字-百分比
+      {"I",        {108, 129, 50, 50}, FALSE},      //文字-小灯
+      {"I",        {620, 113, 72, 72}, FALSE},       //文字-大灯
 };
 
 RGBLED_DIALOG_s RGBLED_DIALOG =
 {
    .RGBLED_Hwnd = NULL,
    .State = TRUE,
-   .exit_bt_draw = home_owner_draw,
    .col_R = 0,
    .col_G = 0,
    .col_B = 0,
@@ -81,10 +76,6 @@ static void Delete_DlALOG()
   leddlg_S.col_R = 0;
   leddlg_S.col_G = 0;
   leddlg_S.col_B = 0;
-  DeleteDC(RGBLED_DIALOG.hdc_mem);
-  DeleteDC(hdc_rgbled_checked);
-  DeleteDC(hdc_rgbled_slider_btn);
-  DeleteDC(hdc_rgbled_slider);
   TIM_RGBLED_Close();
 }
 
@@ -108,14 +99,12 @@ static void draw_scrollbar(HWND hwnd, HDC hdc, COLOR_RGB32 back_c, COLOR_RGB32 P
   WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
   SendMessage(hwnd, SBM_GETTRACKRECT, 0, (LPARAM)&rc_tmp);    // 得到按钮的位置
 
-  BitBlt(hdc, rc_tmp.x, rc.y+15/2+1, rc.w - rc_tmp.x, rc.h/2, hdc_rgbled_slider, rc_tmp.x, 0, SRCCOPY);
-
   rc_scrollbar.x = rc_tmp.x;
-  rc_scrollbar.y = rc.h/2;
-  rc_scrollbar.w = rc.w - rc_tmp.x - 10;
-  rc_scrollbar.h = 2;
+  rc_scrollbar.y = rc.h/2-10;
+  rc_scrollbar.w = rc.w - rc_tmp.x - 15;
+  rc_scrollbar.h = 20;
 	SetBrushColor(hdc, MapRGB888(hdc, Page_c));
-  FillRect(hdc, &rc_scrollbar);
+  FillRoundRect(hdc, &rc_scrollbar, 10);
 }
 
 /*
@@ -136,16 +125,14 @@ static void draw_gradient_scrollbar(HWND hwnd, HDC hdc, COLOR_RGB32 back_c, COLO
   GetClientRect(hwnd, &rc_tmp);//得到控件的位置
   GetClientRect(hwnd, &rc);//得到控件的位置
   SendMessage(hwnd, SBM_GETTRACKRECT, 0, (LPARAM)&rc_tmp);    // 得到按钮的位置
-  
-  BitBlt(hdc, rc.x, rc.y+15/2+1, rc_tmp.x, rc.h/2, hdc_rgbled_slider, 0, 0, SRCCOPY);    // 与ADC使用同一个滑动条
 
-  rc_scrollbar.x = rc.x+10;
-  rc_scrollbar.y = rc.h/2;
+  rc_scrollbar.x = rc.x+15;
+  rc_scrollbar.y = rc.h/2-10;
   rc_scrollbar.w = rc_tmp.x;
-  rc_scrollbar.h = 2;
+  rc_scrollbar.h = 20;
    
 	SetBrushColor(hdc, MapRGB888(hdc, fore_c));
-  FillRect(hdc, &rc_scrollbar);
+  FillRoundRect(hdc, &rc_scrollbar, 10);
 }
 
 /*
@@ -157,38 +144,33 @@ static void GUI_RGBLED_ScrollbarOwnerDraw(DRAWITEM_HDR *ds)
 {
 	HWND hwnd;
 	HDC hdc;
-	HDC hdc_mem;
+//	HDC hdc_mem;
 	RECT rc;
-	RECT rc_cli,rc_tmp;;
+	RECT rc_cli;;
 
 	hwnd = ds->hwnd;
 	hdc = ds->hDC;
 	GetClientRect(hwnd, &rc_cli);
 
-	hdc_mem = CreateMemoryDC(SURF_SCREEN, rc_cli.w, rc_cli.h);   
+  SetBrushColor(hdc, MapRGB(hdc, 240, 240, 240));
+  FillRect(hdc, &rc_cli);
          
   EnableAntiAlias(hdc, TRUE);
 
   /* 背景 */
-  GetClientRect(hwnd, &rc_tmp);//得到控件的位置
   GetClientRect(hwnd, &rc);//得到控件的位置
-  WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
-  BitBlt(hdc_mem, rc.x, rc.y, rc.w, rc.h, RGBLED_DIALOG.hdc_mem, rc_tmp.x, rc_tmp.y, SRCCOPY);
 
 	//绘制白色类型的滚动条
-	draw_scrollbar(hwnd, hdc_mem, color_bg, RGB888(50, 50, 50), RGB888(255, 255, 255));
+	draw_scrollbar(hwnd, hdc, color_bg, RGB888(50, 50, 50), RGB888(255, 255, 255));
 	//绘制渐变类型的滚动条
-	draw_gradient_scrollbar(hwnd, hdc_mem, color_bg, RGB888(50, 50, 50), RGB888(201, 220, 236));
-  EnableAntiAlias(hdc, FALSE);
+	draw_gradient_scrollbar(hwnd, hdc, color_bg, RGB888(50, 50, 50), RGB888(1, 218, 254));
+  
   SendMessage(hwnd, SBM_GETTRACKRECT, 0, (LPARAM)&rc);   
   
 	//绘制滑块
-  BitBlt(hdc_mem, rc.x, rc.y, rc.w, rc.h, hdc_rgbled_slider_btn, 0, 0, SRCCOPY);
-
-  BitBlt(hdc, rc_cli.x, rc_cli.y, rc_cli.w, rc_cli.h, hdc_mem, 0, 0, SRCCOPY);
-
-	//释放内存MemoryDC
-	DeleteDC(hdc_mem);
+  SetBrushColor(hdc, MapRGB(hdc, 56, 123, 245));
+  FillCircle(hdc, rc.x + rc.w/2, rc.h/2, MIN(rc.w, rc.h)/2);
+  EnableAntiAlias(hdc, FALSE);
 }
 
 void GUI_RGBLED_HomeOwnerDraw(DRAWITEM_HDR *ds) 
@@ -201,18 +183,22 @@ void GUI_RGBLED_HomeOwnerDraw(DRAWITEM_HDR *ds)
 
   if (ds->State & BST_PUSHED)
 	{ //按钮是按下状态
-		SetPenColor(hdc, MapRGB(hdc, 250, 250, 250));
+		SetPenColor(hdc, MapRGB(hdc, 1, 191, 255));
 	}
 	else
 	{ //按钮是弹起状态
 
-		SetPenColor(hdc, MapRGB(hdc, 1, 191, 255));      //设置画笔色
+		SetPenColor(hdc, MapRGB(hdc, 250, 250, 250));      //设置画笔色
 	}
+
+  SetPenSize(hdc, 2);
+
+  InflateRect(&rc, 0, -1);
   
   for(int i=0; i<4; i++)
   {
     HLine(hdc, rc.x, rc.y, rc.w);
-    rc.y += 5;
+    rc.y += 9;
   }
 }
 /**
@@ -222,25 +208,31 @@ void GUI_RGBLED_HomeOwnerDraw(DRAWITEM_HDR *ds)
   */
 static void GUI_TEXTLED_OwnerDraw(DRAWITEM_HDR *ds)
 {
-   HDC hdc;
+  HDC hdc;
   RECT rc;
 
-	hdc = ds->hDC;   
-	rc = ds->rc; 
-  
-   /* 显示亮度图标 */
-   if (ds->ID == ID_TEXTBOX_SMALL)
-   {
-      SetFont(hdc, controlFont_24);
-   }
-   else if (ds->ID == ID_TEXTBOX_BIG)
-   {
-      SetFont(hdc, controlFont_32);
-   }
+  hdc = ds->hDC;   
+  rc = ds->rc; 
 
-   SetTextColor(hdc, MapRGB(hdc, leddlg_S.col_R, leddlg_S.col_G, leddlg_S.col_B));
+  HFONT controlFont_32, controlFont_64;
+  controlFont_32 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_32);
+  controlFont_64 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_64);
 
-   DrawText(hdc, L"I", -1, &rc, NULL);//绘制文字(居中对齐方式)
+  /* 显示亮度图标 */
+  if (ds->ID == ID_TEXTBOX_SMALL)
+  {
+    SetFont(hdc, controlFont_32);
+  }
+  else if (ds->ID == ID_TEXTBOX_BIG)
+  {
+    SetFont(hdc, controlFont_64);
+  }
+
+  SetTextColor(hdc, MapRGB(hdc, leddlg_S.col_R, leddlg_S.col_G, leddlg_S.col_B));
+
+  DrawText(hdc, L"I", -1, &rc, NULL);//绘制文字(居中对齐方式)
+  DeleteFont(controlFont_64);
+  DeleteFont(controlFont_32);
 }
 /**
   * @brief  百分比文本重绘
@@ -249,72 +241,97 @@ static void GUI_TEXTLED_OwnerDraw(DRAWITEM_HDR *ds)
   */
 static void GUI_RGBPCTTEXT_OwnerDraw(DRAWITEM_HDR *ds)
 {
-   HDC hdc; //控件窗口HDC
-   HWND hwnd; //控件句柄 
-   RECT rc_cli, rc_tmp;//控件的位置大小矩形
-   WCHAR wbuf[128];
-   hwnd = ds->hwnd;
-	 hdc = ds->hDC; 
-//   if(ds->ID ==  ID_BUTTON_START && show_lrc == 1)
-//      return;
-   //获取控件的位置大小信息
-   GetClientRect(hwnd, &rc_cli);
-   GetClientRect(hwnd, &rc_tmp);//得到控件的位置
-   //GetClientRect(hwnd, &rc_cli);//得到控件的位置
-   WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
-   
-   BitBlt(hdc, rc_cli.x, rc_cli.y, rc_cli.w, rc_cli.h, RGBLED_DIALOG.hdc_mem, rc_tmp.x, rc_tmp.y, SRCCOPY);  
-
-	GetWindowText(ds->hwnd, wbuf, 128); //获得按钮控件的文字  
-
-   //设置文本的颜色
-   SetTextColor(hdc, MapRGB(hdc, 10, 10, 10));
-   SetFont(hdc, controlFont_24);
-   DrawText(hdc, L"H",-1,&rc_cli,DT_BOTTOM|DT_RIGHT);//绘制文字(居中对齐方式)
-
-   SetFont(hdc, controlFont_32);
-   rc_cli.w -= 20;
-   DrawText(hdc, wbuf,-1,&rc_cli,DT_BOTTOM|DT_RIGHT);//绘制文字(居中对齐方式)
+  HDC hdc; //控件窗口HDC
+  HWND hwnd; //控件句柄 
+  RECT rc_cli;//控件的位置大小矩形
+  WCHAR wbuf[128];
+  hwnd = ds->hwnd;
+  hdc = ds->hDC; 
+  //   if(ds->ID ==  ID_BUTTON_START && show_lrc == 1)
+  //      return;
+  //获取控件的位置大小信息
+  GetClientRect(hwnd, &rc_cli);
   
+  SetBrushColor(hdc, MapRGB(hdc, 240, 240, 240));
+  FillRect(hdc, &rc_cli);
+
+  GetWindowText(ds->hwnd, wbuf, 128); //获得按钮控件的文字  
+
+  //设置文本的颜色
+  SetTextColor(hdc, MapRGB(hdc, 10, 10, 10));
+  HFONT controlFont_32;
+  controlFont_32 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_32);
+  SetFont(hdc, controlFont_32);
+  DrawText(hdc, L"H",-1,&rc_cli,DT_BOTTOM|DT_RIGHT);
+
+  HFONT controlFont_64;
+  controlFont_64 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_64);
+  SetFont(hdc, controlFont_64);
+  rc_cli.w -= 37;
+  DrawText(hdc, wbuf,-1,&rc_cli,DT_BOTTOM|DT_RIGHT);
+  
+  DeleteFont(controlFont_64);
+  DeleteFont(controlFont_32);
 }
 
 static void radiobox_owner_draw(DRAWITEM_HDR *ds) // 单选按钮外观
 {
 	HDC hdc;
-	RECT rc, rc_tmp;
-  HWND hwnd;
-  
-  hwnd = ds->hwnd;
+	RECT rc;
+  WCHAR wbuf[128];
+
 	hdc = ds->hDC;   //button的绘图上下文句柄.
 	rc = ds->rc;     //button的绘制矩形区.
-
-  GetClientRect(hwnd, &rc_tmp);//得到控件的位置
-  WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
-
-  BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, RGBLED_DIALOG.hdc_mem, rc_tmp.x, rc_tmp.y, SRCCOPY);
+  
+  SetBrushColor(hdc, MapRGB(hdc, 240, 240, 240));
+  FillRect(hdc, &rc);
+  GetWindowText(ds->hwnd, wbuf, 128); //获得按钮控件的文字 
 
   if (ds->State & BN_CHECKED)
   { 
     // 按钮被选中状态
-    BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_rgbled_checked, 0, 0, SRCCOPY);
+    SetBrushColor(hdc, MapRGB(hdc, 50, 50, 50));
   }
+  else
+  {
+    SetBrushColor(hdc, MapRGB(hdc, 210, 210, 210));
+  }
+  
+  SetTextColor(hdc, MapRGB(hdc, 240, 240, 240));
+  
+  EnableAntiAlias(hdc, TRUE);
+  FillCircle(hdc, rc.w/2, rc.w/2, MIN(rc.w, rc.h)/2);
+  EnableAntiAlias(hdc, FALSE);
+  HFONT controlFont_64;
+  
+  controlFont_64 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_64);
+  SetFont(hdc, controlFont_64);
+  rc.y += 5;
+  rc.h -= 5;
+  rc.x += 1;
+  DrawText(hdc, L"I", -1, &rc, DT_TOP|DT_CENTER);//绘制文字(居中对齐方式)
+  rc.x -= 1;
+  
+  SetFont(hdc, defaultFont);
+  SetTextColor(hdc, MapRGB(hdc, 10, 10, 10));
+  DrawText(hdc, wbuf, -1, &rc, DT_CENTER|DT_BOTTOM);//绘制文字(居中对齐方式)
+  
+  DeleteFont(controlFont_64);
 }
 
 static	LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-   
-   RECT rc;
+  RECT rc;
 	switch (msg)
 	{
       case WM_CREATE: 
       {
          GetClientRect(hwnd, &rc);
-         //pSurfTop = CreateSurface(SURF_ARGB4444, rc.w, rc.h, NULL, 0);
 
-          CreateWindow(BUTTON, L"O",WS_TRANSPARENT|WS_OWNERDRAW|WS_VISIBLE,
-                      GUI_RGBLED_Icon[0].rc.x, GUI_RGBLED_Icon[0].rc.y, 
-                      GUI_RGBLED_Icon[0].rc.w, GUI_RGBLED_Icon[0].rc.h, 
-                      hwnd, ID_EXIT, NULL, NULL); 
+         CreateWindow(BUTTON, L"O",WS_TRANSPARENT|WS_OWNERDRAW|WS_VISIBLE,
+                    GUI_RGBLED_Icon[0].rc.x, GUI_RGBLED_Icon[0].rc.y, 
+                    GUI_RGBLED_Icon[0].rc.w, GUI_RGBLED_Icon[0].rc.h, 
+                    hwnd, ID_EXIT, NULL, NULL); 
 
          CreateWindow(TEXTBOX, L"RGB灯控制", WS_TRANSPARENT|WS_VISIBLE, 
                       GUI_RGBLED_Icon[1].rc.x, GUI_RGBLED_Icon[1].rc.y, 
@@ -328,7 +345,7 @@ static	LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          RGBLED_DIALOG.sif_R.nMin = 0;
          RGBLED_DIALOG.sif_R.nMax = 255;
          RGBLED_DIALOG.sif_R.nValue = RGBLED_DIALOG.col_R;
-         RGBLED_DIALOG.sif_R.TrackSize = 30;
+         RGBLED_DIALOG.sif_R.TrackSize = 90;
          RGBLED_DIALOG.sif_R.ArrowSize = 0;
 
          /*创建滑动条--R*/
@@ -343,7 +360,7 @@ static	LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          RGBLED_DIALOG.sif_G.nMin = 0;
          RGBLED_DIALOG.sif_G.nMax = 255;
          RGBLED_DIALOG.sif_G.nValue = RGBLED_DIALOG.col_G;
-         RGBLED_DIALOG.sif_G.TrackSize = 30;
+         RGBLED_DIALOG.sif_G.TrackSize = 90;
          RGBLED_DIALOG.sif_G.ArrowSize = 0;
          /*创建滑动条--G*/
          CreateWindow(SCROLLBAR, L"SCROLLBAR_G", WS_OWNERDRAW |WS_TRANSPARENT, 
@@ -356,7 +373,7 @@ static	LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          RGBLED_DIALOG.sif_B.nMin = 0;
          RGBLED_DIALOG.sif_B.nMax = 255;
          RGBLED_DIALOG.sif_B.nValue = RGBLED_DIALOG.col_B;
-         RGBLED_DIALOG.sif_B.TrackSize = 30;
+         RGBLED_DIALOG.sif_B.TrackSize = 90;
          RGBLED_DIALOG.sif_B.ArrowSize = 0;
          /*创建滑动条--B*/
          CreateWindow(SCROLLBAR, L"SCROLLBAR_B", WS_OWNERDRAW | WS_TRANSPARENT, 
@@ -368,19 +385,19 @@ static	LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          SetColorValue(0, 0, 0);
 
          /* 单选按钮 */
-         CreateWindow(BUTTON, L"-", WS_OWNERDRAW | WS_VISIBLE | BS_RADIOBOX,
+         CreateWindow(BUTTON, L"红灯", WS_OWNERDRAW | WS_VISIBLE | BS_RADIOBOX,
                         GUI_RGBLED_Icon[3].rc.x, GUI_RGBLED_Icon[3].rc.y,
                         GUI_RGBLED_Icon[3].rc.w, GUI_RGBLED_Icon[3].rc.h,
                         hwnd, ID_RGB_SELECT_R | (1 << 16), NULL, NULL); 
 
          /* 单选按钮 */
-         CreateWindow(BUTTON, L"-", WS_OWNERDRAW | WS_VISIBLE | BS_RADIOBOX,
+         CreateWindow(BUTTON, L"绿灯", WS_OWNERDRAW | WS_VISIBLE | BS_RADIOBOX,
                         GUI_RGBLED_Icon[4].rc.x, GUI_RGBLED_Icon[4].rc.y,
                         GUI_RGBLED_Icon[4].rc.w, GUI_RGBLED_Icon[4].rc.h,
                         hwnd, ID_RGB_SELECT_G | (1 << 16), NULL, NULL); 
          
          /* 单选按钮 */
-         CreateWindow(BUTTON, L"-", WS_OWNERDRAW | WS_VISIBLE | BS_RADIOBOX,
+         CreateWindow(BUTTON, L"蓝灯", WS_OWNERDRAW | WS_VISIBLE | BS_RADIOBOX,
                         GUI_RGBLED_Icon[5].rc.x, GUI_RGBLED_Icon[5].rc.y,
                         GUI_RGBLED_Icon[5].rc.w, GUI_RGBLED_Icon[5].rc.h,
                         hwnd, ID_RGB_SELECT_B | (1 << 16), NULL, NULL); 
@@ -406,96 +423,12 @@ static	LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                       GUI_RGBLED_Icon[11].rc.x, GUI_RGBLED_Icon[11].rc.y, 
                       GUI_RGBLED_Icon[11].rc.w, GUI_RGBLED_Icon[11].rc.h,
                       hwnd, ID_TEXTBOX_BIG, NULL, NULL);
-                    
 
-         BOOL res;
-         u8 *jpeg_buf;
-         u32 jpeg_size;
-         JPG_DEC *dec;
-         if (strstr(GUI_RGB_BACKGROUNG_PIC, "0:/") == NULL)
-            res = RES_Load_Content(GUI_RGB_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);
-         else
-            res = FS_Load_Content(GUI_RGB_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);    // 资源在 SD 卡
-        
-         RGBLED_DIALOG.hdc_mem = CreateMemoryDC(SURF_SCREEN, GUI_XSIZE, GUI_YSIZE);
-         if(res)
-         {
-            /* 根据图片数据创建JPG_DEC句柄 */
-            dec = JPG_Open(jpeg_buf, jpeg_size);
-
-            /* 绘制至内存对象 */
-            JPG_Draw(RGBLED_DIALOG.hdc_mem, 0, 0, dec);
-
-            /* 关闭JPG_DEC句柄 */
-            JPG_Close(dec);
-         }
-         /* 释放图片内容空间 */
-         RES_Release_Content((char **)&jpeg_buf);
-
-         u8 *pic_buf;
-         u32 pic_size;
-         PNG_DEC *png_dec;
-         BITMAP png_bm;
-
-         /* 创建选中按钮 HDC */
-         hdc_rgbled_checked = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888, 36, 36);
-         ClrDisplay(hdc_rgbled_checked, NULL, 0);
          
-         if (strstr(GUI_RGB_BACKGROUNG_PIC, "0:/") == NULL)
-            res = RES_Load_Content(GUI_RGBLED_CHECKED_PIC, (char**)&pic_buf, &pic_size);     // 资源在外部 FLASH
-         else
-            res = FS_Load_Content(GUI_RGBLED_CHECKED_PIC, (char**)&pic_buf, &pic_size);    // 资源在 SD 卡
-         
-         if(res)
-         {
-            png_dec = PNG_Open(pic_buf, pic_size);
-            PNG_GetBitmap(png_dec, &png_bm);
-            DrawBitmap(hdc_rgbled_checked, 0, 0, &png_bm, NULL);
-            PNG_Close(png_dec);
-         }
-         /* 释放图片内容空间 */
-         RES_Release_Content((char **)&pic_buf);
-         
-         /* 创建滑动条背景 HDC */
-         hdc_rgbled_slider = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888, 240, 15);
-         ClrDisplay(hdc_rgbled_slider, NULL, 0);
-         
-         if (strstr(GUI_RGB_SLIDER_PIC, "0:/") == NULL)
-            res = RES_Load_Content(GUI_RGB_SLIDER_PIC, (char**)&pic_buf, &pic_size);     // 资源在外部 FLASH
-         else
-            res = FS_Load_Content(GUI_RGB_SLIDER_PIC, (char**)&pic_buf, &pic_size);    // 资源在 SD
-
-         if(res)
-         {
-            png_dec = PNG_Open(pic_buf, pic_size);
-            PNG_GetBitmap(png_dec, &png_bm);
-            DrawBitmap(hdc_rgbled_slider, 0, 0, &png_bm, NULL);
-            PNG_Close(png_dec);
-         }
-         /* 释放图片内容空间 */
-         RES_Release_Content((char **)&pic_buf);
-         
-         /* 创建滑块 HDC */
-         hdc_rgbled_slider_btn = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888, 30, 30);    // 滑块
-         ClrDisplay(hdc_rgbled_slider_btn, NULL, 0);
-         
-         if (strstr(GUI_RGB_SLIDER_BTN_PIC, "0:/") == NULL)
-            res = RES_Load_Content(GUI_RGB_SLIDER_BTN_PIC, (char**)&pic_buf, &pic_size);     // 资源在外部 FLASH
-         else
-            res = FS_Load_Content(GUI_RGB_SLIDER_BTN_PIC, (char**)&pic_buf, &pic_size);    // 资源在 SD
-
-         if(res)
-         {
-            png_dec = PNG_Open(pic_buf, pic_size);
-            PNG_GetBitmap(png_dec, &png_bm);
-            DrawBitmap(hdc_rgbled_slider_btn, 0, 0, &png_bm, NULL);
-            PNG_Close(png_dec);
-         }
-         /* 释放图片内容空间 */
-         RES_Release_Content((char **)&pic_buf);
-             
+         //DrawBitmap(hdc_bk,0, 0,&RGBdesktop_0,NULL);
+         //StretchBlt(RGBLED_DIALOG.hdc_mem, rc.x, rc.y, rc.w, rc.h, hdc_bk, 0, 0,RGBdesktop_0.Width, RGBdesktop_0.Height, SRCCOPY);               
          SetColorValue(leddlg_S.led_R, leddlg_S.led_G, leddlg_S.led_B);
-
+         //GUI_DEBUG("%x%x", leddlg_S.led_R/16, leddlg_S.led_R%16);
          break;
       }
 
@@ -667,71 +600,31 @@ static	LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       }
      case WM_PAINT:
      {
+        HDC hdc;
         PAINTSTRUCT ps;
 
-        BeginPaint(hwnd, &ps);
+        hdc = BeginPaint(hwnd, &ps);
 
+        RECT rc = {0, 0, GUI_XSIZE, GUI_YSIZE};
+        RECT rc_title_grad = {0, 80, GUI_XSIZE, 5};
+        
+        SetBrushColor(hdc, MapRGB(hdc, 240, 240, 240));
+        FillRect(hdc, &rc);
+
+        rc.h = 80;
+        SetBrushColor(hdc, MapRGB(hdc, 1, 218, 254));
+        FillRect(hdc, &rc);//, MapRGB(hdc, 1, 218, 254), MapRGB(hdc, 1, 168, 255), FALSE);
+        
+        GradientFillRect(hdc, &rc_title_grad, MapRGB(hdc, 150, 150, 150), MapRGB(hdc, 240, 240, 240), TRUE);
+        
         EndPaint(hwnd, &ps);
         break;
      }      
-//      case WM_CTLCOLOR:
-//      {
-//         u16 id;
-//         id =LOWORD(wParam);         
-//         CTLCOLOR *cr;
-//         cr =(CTLCOLOR*)lParam;
-//         
-//         switch(id)
-//         {
-           
-//            case ID_TEXTBOX_R_LED:
-//            {
-//               cr->TextColor = RGB888(leddlg_S.col_R, 0, 0);
-//               cr->BackColor = ID_TEXTBOX_R_LED_BackColor;     
-//               break;
-//            }
-//            case ID_TEXTBOX_G_LED:
-//            {
-//               cr->TextColor = RGB888(0, leddlg_S.col_G, 0);
-//               cr->BackColor = ID_TEXTBOX_G_LED_BackColor;     
-//               break;
-//            }
-//            case ID_TEXTBOX_B_LED:
-//            {
-//               cr->TextColor = RGB888(0, 0, leddlg_S.col_B);
-//               cr->BackColor = ID_TEXTBOX_B_LED_BackColor;     
-//               break;
-//            }              
-//            default:
-//               return FALSE;
-//         }
-         
-         
-//         
-//         return TRUE;
-//         
-//      } 
-      case WM_ERASEBKGND:
-      {
-         HDC hdc =(HDC)wParam;
-         RECT rc =*(RECT*)lParam;
-         
-         if(RGBLED_DIALOG.State!=FALSE)
-            BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, RGBLED_DIALOG.hdc_mem, rc.x, rc.y, SRCCOPY);
-         else
-         {
-            SetBrushColor(hdc, MapRGB(hdc, 0,0,0));
-            FillRect(hdc, &rc);             
-         }
-    
 
-
-         return TRUE;
-
-      } 
       case WM_DESTROY:
       {        
          Delete_DlALOG();
+
          return PostQuitMessage(hwnd);	
       }          
       default:

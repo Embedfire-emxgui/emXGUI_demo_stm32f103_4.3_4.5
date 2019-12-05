@@ -1,36 +1,35 @@
 #include "emXGUI.h"
-#include "GUI_RECORDER_DIALOG.h"
+#include "./recorder/GUI_RECORDER_DIALOG.h"
 #include "x_libc.h"
 #include "string.h"
 #include "ff.h"
 #include "./mp3_player/Backend_mp3Player.h"
-#include "Backend_Recorder.h"
+#include "./recorder/Backend_Recorder.h"
 
 //图标管理数组
 recorder_icon_t record_icon[] = {
 
-   {L"A",        { 25, 180, 26, 24},   ID_RECORD_bPOWER},    // 0. 音量
-   {L"Q",        { 68, 180, 24, 24},   ID_RECORD_BUGLE},     // 1. 喇叭按钮
-   {L"S",        {164, 205, 24, 24},   ID_RECORD_BACK},      // 2. 上一首
-   {L"T",        {203, 201, 32, 32},   ID_RECORD_PLAY},      // 3. 播放
-   {L"V",        {250, 204, 24, 24},   ID_RECORD_NEXT},      // 4. 下一首
-   {L"U",        { 25, 146, 24, 24},   ID_RECORD_STOP},      // 5. 停止录音
-   {L"U",        { 68, 146, 24, 24},   ID_RECORD_START},     // 6. 开始录音
-   {L"U",        { 68, 146, 24, 24},   ID_RECORD_PADNC},     // 7. 暂停继续
-   {L"O",        {286,   8, 23, 23},   ID_RECORD_EXIT},      // 8. 退出
- 
-   {L"录音机",   {30,   41, 57, 27},   ID_RECORD_STATE},     // 9. 正在录音
-   {L"00:00",    {38,   86, 42, 27},   ID_RECORD_TIME},      // 10. 录音时长
-   {L"00:00",    {119, 177, 31, 18},   ID_PLAY_TIME},        // 11. 播放时长
-   {L"00:00",    {287, 177, 32, 18},   ID_PLAY_TOTAL_TIME},  // 12. 录音总时长
+   {L"A",        {308, 412, 48, 48},   ID_RECORD_bPOWER},    // 0. 音量
+   {L"Q",        {718, 407, 64, 64},   ID_RECORD_BUGLE},     // 1. 喇叭按钮
+   {L"S",        {446, 407, 64, 64},   ID_RECORD_BACK},      // 2. 上一首
+   {L"T",        {538, 405, 72, 72},   ID_RECORD_PLAY},      // 3. 播放
+   {L"V",        {642, 407, 64, 64},   ID_RECORD_NEXT},      // 4. 下一首
+   {L"U",        {79,  308, 64, 64},   ID_RECORD_STOP},      // 5. 停止录音
+   {L"U",        {181, 308, 64, 64},   ID_RECORD_START},     // 6. 开始录音
+   {L"U",        {181, 308, 72, 72},   ID_RECORD_PADNC},     // 7. 暂停继续
+   {L"O",        {740,  12, 36, 36},   ID_RECORD_EXIT},      // 8. 退出
+
+   {L"录音机",   {96,  85, 120, 30},   ID_RECORD_STATE},     // 9. 正在录音
+   {L"00:00",    {106, 187,100, 30},   ID_RECORD_TIME},      // 10. 录音时长
+   {L"00:00",    {302, 379, 66, 30},   ID_PLAY_TIME},        // 11. 播放时长
+   {L"00:00",    {732, 379, 66, 30},   ID_PLAY_TOTAL_TIME},  // 12. 录音总时长
   
-   {L" ",        {135, 26, 158,138},   ID_RECORD_LIST},      // 13. 音乐列表
-   {L" ",        {152, 181,130, 16},   ID_PLAY_PROGRESS},    // 14. 播放进度条
-   {L" ",        { 24, 211, 69, 16},   ID_RECORD_sPOWER},    // 15. 音量进度条
+   {L" ",        {325, 47, 406,301},   ID_RECORD_LIST},      // 13. 音乐列表
+   {L" ",        {370, 378,355, 30},   ID_PLAY_PROGRESS},    // 14. 播放进度条
+   {L" ",        {369, 423, 74, 30},   ID_RECORD_sPOWER},    // 15. 音量进度条
   
 };
 
-static HDC hdc_bk;
 //音乐播放器句柄
 HWND	Recorer_hwnd;
 TaskHandle_t h_record;    // 播放任务控制句柄
@@ -161,9 +160,7 @@ static void App_Record(void *p)
   */
 static int thread=0;
 static void App_PlayRecord(HWND hwnd)
-{
-  HDC hdc;
-                            
+{                          
   thread =1;
   vTaskSuspend(h_play_record);    // 挂起线程
   
@@ -186,7 +183,7 @@ static void App_PlayRecord(HWND hwnd)
 
     if(strstr(music_name,".wav")||strstr(music_name,".WAV"))
     {
-      record_play((char *)music_name, hwnd);
+      record_play((uint8_t *)music_name, hwnd);
     }
 
     printf("播放结束\n");
@@ -225,10 +222,14 @@ static void exit_owner_draw(DRAWITEM_HDR *ds) //绘制一个按钮外观
 		SetPenColor(hdc, MapRGB(hdc, 1, 191, 255));      //设置画笔色
 	}
   
+  SetPenSize(hdc, 2);
+
+  InflateRect(&rc, 0, -1);
+  
   for(int i=0; i<4; i++)
   {
     HLine(hdc, rc.x, rc.y, rc.w);
-    rc.y += 5;
+    rc.y += 9;
   }
 }
 
@@ -262,12 +263,12 @@ static void stop_owner_draw(DRAWITEM_HDR *ds) //绘制一个按钮外观
   }
   
   /* 画圆环 */
-//  SetPenSize(hdc, 2);
+  SetPenSize(hdc, 2);
   DrawCircle(hdc, rc.x+rc.w/2, rc.y+rc.h/2, rc.w/2);
 
   /* 绘制圆角矩形 */
-	InflateRect(&rc, -5, -5);
-  FillRoundRect(hdc, &rc, 4);
+	InflateRect(&rc, -13, -13);
+  FillRoundRect(hdc, &rc, 5);
   
   EnableAntiAlias(hdc, FALSE);
 }
@@ -303,12 +304,11 @@ static void start_owner_draw(DRAWITEM_HDR *ds) //绘制一个按钮外观
   }
   
   /* 画圆环 */
-//	SetPenSize(hdc, 2);
+	SetPenSize(hdc, 2);
   DrawCircle(hdc, rc.x+rc.w/2, rc.y+rc.h/2, rc.w/2);
 
   /* 绘制圆角矩形 */
-//  SetPenSize(hdc, 1);
-  FillCircle(hdc, rc.x+rc.w/2, rc.x+rc.w/2, 7);
+  FillCircle(hdc, rc.x+rc.w/2, rc.x+rc.w/2, 27);
   
   EnableAntiAlias(hdc, FALSE);
 }
@@ -322,113 +322,60 @@ static void start_owner_draw(DRAWITEM_HDR *ds) //绘制一个按钮外观
 
 static void button_owner_draw(DRAWITEM_HDR *ds)
 {
-   HDC hdc; //控件窗口HDC
-   HDC hdc_mem;//内存HDC，作为缓冲区
-   HWND hwnd; //控件句柄 
-   RECT rc_cli, rc_tmp;//控件的位置大小矩形
-   WCHAR wbuf[128];
-	hwnd = ds->hwnd;
-	hdc = ds->hDC; 
-//   if(ds->ID ==  ID_BUTTON_START && show_lrc == 1)
-//      return;
-   //获取控件的位置大小信息
-   GetClientRect(hwnd, &rc_cli);
-   //创建缓冲层，格式为SURF_ARGB4444
-   hdc_mem = CreateMemoryDC(SURF_SCREEN, rc_cli.w, rc_cli.h);
-   
-	GetWindowText(ds->hwnd,wbuf,128); //获得按钮控件的文字  
-//   if(ds->ID == ID_BUTTON_Power || ds->ID == ID_BUTTON_MINISTOP){
-//      SetBrushColor(hdc, color_bg);
-//      FillRect(hdc, &rc_cli);
-//   }
-//   
-//   SetBrushColor(hdc_mem,MapARGB(hdc_mem, 0, 255, 250, 250));
-//   FillRect(hdc_mem, &rc_cli);
+  HDC hdc; //控件窗口HDC
+  HWND hwnd; //控件句柄 
+  RECT rc_cli;//控件的位置大小矩形
+  WCHAR wbuf[128];
+  hwnd = ds->hwnd;
+  hdc = ds->hDC; 
 
-   GetClientRect(hwnd, &rc_tmp);//得到控件的位置
-   GetClientRect(hwnd, &rc_cli);//得到控件的位置
-   WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
-   
-   BitBlt(hdc_mem, rc_cli.x, rc_cli.y, rc_cli.w, rc_cli.h, hdc_bk, rc_tmp.x, rc_tmp.y, SRCCOPY);
+  //获取控件的位置大小信息
+  GetClientRect(hwnd, &rc_cli);
 
-   //播放键使用100*100的字体
-  if(ds->ID == ID_RECORD_PLAY)
-    SetFont(hdc_mem, controlFont_32);
-//  else if(ds->ID == ID_RECORD_bPOWER || ds->ID == ID_RECORD_BUGLE)
-//    SetFont(hdc_mem, controlFont_32);
-  else
-    SetFont(hdc_mem, controlFont_24);
+  GetWindowText(ds->hwnd,wbuf,128); //获得按钮控件的文字  
+  GetClientRect(hwnd, &rc_cli);//得到控件的位置
 
-	//设置按键的颜色
-	if (ds->Style & WS_DISABLED)    // 窗口是禁止的
+  HFONT controlFont_64, controlFont_48;
+
+  //播放键使用100*100的字体
+  if(ds->ID == ID_RECORD_PLAY || ds->ID == ID_RECORD_PADNC)
   {
-    SetTextColor(hdc_mem, MapARGB(hdc_mem, 250, 220, 220, 220));      //设置文字色
+    controlFont_64 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_64);
+    SetFont(hdc, controlFont_64);
+  }
+  else
+  {
+    controlFont_48 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_48);
+    SetFont(hdc, controlFont_48);
+  }
+
+  //设置按键的颜色
+  if (ds->Style & WS_DISABLED)    // 窗口是禁止的
+  {
+    SetTextColor(hdc, MapARGB(hdc, 250, 220, 220, 220));      //设置文字色
   }
   else
   {
     if (ds->State & BST_PUSHED)
     { //按钮是按下状态
-      SetTextColor(hdc_mem, MapARGB(hdc_mem, 250,105,105,105));      //设置文字色
+      SetTextColor(hdc, MapARGB(hdc, 250,105,105,105));      //设置文字色
     }
     else
     { //按钮是弹起状态
-      SetTextColor(hdc_mem, MapARGB(hdc_mem, 250,250,250,250));
+      SetTextColor(hdc, MapARGB(hdc, 250,250,250,250));
     }
   }
- 
-   DrawText(hdc_mem, wbuf,-1,&rc_cli,DT_VCENTER);//绘制文字(居中对齐方式)
-   
-   BitBlt(hdc, rc_cli.x, rc_cli.y, rc_cli.w, rc_cli.h, hdc_mem, 0, 0, SRCCOPY);
-   
-   DeleteDC(hdc_mem);  
-}
 
+  DrawText(hdc, wbuf,-1,&rc_cli,DT_VCENTER);//绘制文字(居中对齐方式)
 
-/*
- * @brief  绘制滚动条
- * @param  hwnd:   滚动条的句柄值
- * @param  hdc:    绘图上下文
- * @param  back_c：背景颜色
- * @param  Page_c: 滚动条Page处的颜色
- * @param  fore_c：滚动条滑块的颜色
- * @retval NONE
-*/
-static void draw_scrollbar(HWND hwnd, HDC hdc, COLOR_RGB32 back_c, COLOR_RGB32 Page_c, COLOR_RGB32 fore_c)
-{
-	RECT rc,rc_tmp;
-   RECT rc_scrollbar;
-	GetClientRect(hwnd, &rc);
-	/* 背景 */
-   GetClientRect(hwnd, &rc_tmp);//得到控件的位置
-   GetClientRect(hwnd, &rc);//得到控件的位置
-   WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
-   
-   BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_bk, rc_tmp.x, rc_tmp.y, SRCCOPY);
-
-   rc_scrollbar.x = rc.x;
-   rc_scrollbar.y = rc.h/2-1;
-   rc_scrollbar.w = rc.w;
-   rc_scrollbar.h = 2;
-   
-	SetBrushColor(hdc, MapRGB888(hdc, Page_c));
-	FillRect(hdc, &rc_scrollbar);
-
-	/* 滑块 */
-	SendMessage(hwnd, SBM_GETTRACKRECT, 0, (LPARAM)&rc);
-
-	SetBrushColor(hdc, MapRGB(hdc, 169, 169, 169));
-	//rc.y += (rc.h >> 2) >> 1;
-	//rc.h -= (rc.h >> 2);
-	/* 边框 */
-	//FillRoundRect(hdc, &rc, MIN(rc.w, rc.h) >> 2);
-  EnableAntiAlias(hdc, ENABLE);
-	FillCircle(hdc, rc.x + rc.w / 2, rc.y + rc.h / 2, rc.h / 2 - 1);
-   InflateRect(&rc, -2, -2);
-
-	SetBrushColor(hdc, MapRGB888(hdc, fore_c));
-	FillCircle(hdc, rc.x + rc.w / 2, rc.y + rc.h / 2, rc.h / 2 - 1);
-  EnableAntiAlias(hdc, DISABLE);
-   //FillRoundRect(hdc, &rc, MIN(rc.w, rc.h) >> 2);
+  if(ds->ID == ID_RECORD_PLAY || ds->ID == ID_RECORD_PADNC)
+  {
+    DeleteFont(controlFont_64);
+  }
+  else
+  {
+    DeleteFont(controlFont_48);
+  }
 }
 
 /*
@@ -451,11 +398,55 @@ static void Brigh_Textbox_OwnerDraw(DRAWITEM_HDR *ds) //绘制一个按钮外观
    GetClientRect(hwnd, &rc);//得到控件的位置
    WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
    
-   BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_bk, rc_tmp.x, rc_tmp.y, SRCCOPY);
+//  SetBrushColor(hdc, MapRGB(hdc, 250, 250, 250));
+//	FillRect(hdc, &rc);
 
 	SetTextColor(hdc, MapRGB(hdc, 50, 50, 50));
 	GetWindowText(hwnd, wbuf, 128); //获得按钮控件的文字
 	DrawText(hdc, wbuf, -1, &rc, DT_VCENTER|DT_CENTER);//绘制文字(居中对齐方式)
+}
+
+/*
+ * @brief  绘制滚动条
+ * @param  hwnd:   滚动条的句柄值
+ * @param  hdc:    绘图上下文
+ * @param  back_c：背景颜色
+ * @param  Page_c: 滚动条Page处的颜色
+ * @param  fore_c：滚动条滑块的颜色
+ * @retval NONE
+*/
+static void draw_scrollbar(HWND hwnd, HDC hdc, COLOR_RGB32 back_c, COLOR_RGB32 Page_c, COLOR_RGB32 fore_c)
+{
+  RECT rc;
+  RECT rc_scrollbar;
+
+  /* 背景 */
+  GetClientRect(hwnd, &rc);//得到控件的位置
+
+  SetBrushColor(hdc,MapARGB(hdc, 0, 243, 142, 234));
+  FillRect(hdc, &rc);
+
+  rc_scrollbar.x = rc.x;
+  rc_scrollbar.y = rc.h/2-1;
+  rc_scrollbar.w = rc.w;
+  rc_scrollbar.h = 2;
+
+  SetBrushColor(hdc, MapRGB888(hdc, Page_c));
+  FillRect(hdc, &rc_scrollbar);
+
+  /* 滑块 */
+  SendMessage(hwnd, SBM_GETTRACKRECT, 0, (LPARAM)&rc);
+
+  SetBrushColor(hdc, MapRGB(hdc, 169, 169, 169));
+  //rc.y += (rc.h >> 2) >> 1;
+  //rc.h -= (rc.h >> 2);
+  /* 边框 */
+  //FillRoundRect(hdc, &rc, MIN(rc.w, rc.h) >> 2);
+  FillCircle(hdc, rc.x + rc.w / 2, rc.y + rc.h / 2, rc.h / 2 - 1);
+  InflateRect(&rc, -2, -2);
+
+  SetBrushColor(hdc, MapRGB888(hdc, fore_c));
+  FillCircle(hdc, rc.x + rc.w / 2, rc.y + rc.h / 2, rc.h / 2 - 1);
 }
 
 /*
@@ -516,7 +507,7 @@ static void listbox_owner_draw(DRAWITEM_HDR *ds)
 {
 	HWND hwnd;
 	HDC hdc;
-	RECT rc,rc_tmp;
+	RECT rc;
 	int i,count,cursel;
 	WCHAR wbuf[128];
 	hwnd =ds->hwnd;
@@ -526,12 +517,11 @@ static void listbox_owner_draw(DRAWITEM_HDR *ds)
 
 	rc =ds->rc;
 
-   /* 背景 */
-   GetClientRect(hwnd, &rc_tmp);//得到控件的位置
-   GetClientRect(hwnd, &rc);//得到控件的位置
-   WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
+  /* 背景 */
+  GetClientRect(hwnd, &rc);//得到控件的位置
    
-   BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_bk, rc_tmp.x, rc_tmp.y, SRCCOPY);
+  SetBrushColor(hdc, MapRGB(hdc, 243, 142, 234));
+  FillRect(hdc, &rc);
   
   if (!SendMessage(hwnd,LB_GETCOUNT,0,0))
   {
@@ -580,7 +570,6 @@ static void listbox_owner_draw(DRAWITEM_HDR *ds)
   }
 }
 
-extern int SelectDialogBox(HWND hwndParent, RECT *rc, const WCHAR *pText, const WCHAR *pCaption, const MSGBOX_OPTIONS *ops);
 static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
    static uint8_t  BUGLE_STATE = 0;     // 喇叭状态
@@ -610,31 +599,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
            GUI_DEBUG("vs1053硬件复位失败");
          }
         
-         VS_Soft_Reset();
-        
-         u8 *jpeg_buf;
-         u32 jpeg_size;
-         JPG_DEC *dec;
-         BOOL res = NULL;
-
-         res = RES_Load_Content(GUI_RECORDER_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);
-         //res = FS_Load_Content(GUI_RECORDER_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);
-         hdc_bk = CreateMemoryDC(SURF_SCREEN, GUI_XSIZE, GUI_YSIZE);
-         if(res)
-         {
-            /* 根据图片数据创建JPG_DEC句柄 */
-            dec = JPG_Open(jpeg_buf, jpeg_size);
-
-            /* 绘制至内存对象 */
-            JPG_Draw(hdc_bk, 0, 0, dec);
-
-            /* 关闭JPG_DEC句柄 */
-            JPG_Close(dec);
-         }
-         /* 释放图片内容空间 */
-         RES_Release_Content((char **)&jpeg_buf); 
-
-//         exit_sem = GUI_SemCreate(0,1);//创建一个信号量        
+         VS_Soft_Reset();   
 
          for (uint8_t xC=0; xC<9; xC++)     // 0~7 ：按钮
          {
@@ -651,7 +616,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          for (uint8_t xC=9; xC<13; xC++)    // 8~11 ：文本框
          {
             /* 循环创建文本框 */
-            CreateWindow(TEXTBOX, record_icon[xC].icon_name, WS_OWNERDRAW | WS_VISIBLE,
+            CreateWindow(TEXTBOX, record_icon[xC].icon_name, WS_OWNERDRAW | WS_VISIBLE | WS_TRANSPARENT,
                          record_icon[xC].rc.x, record_icon[xC].rc.y,
                          record_icon[xC].rc.w,record_icon[xC].rc.h,
                          hwnd, record_icon[xC].id, NULL, NULL); 
@@ -664,7 +629,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          sif.nMin = 0;
          sif.nMax = 255;
          sif.nValue = 0;//初始值
-         sif.TrackSize = 15;//滑块值
+         sif.TrackSize = 29;//滑块值
          sif.ArrowSize = 0;//两端宽度为0（水平滑动条）          
          music_wnd_time = CreateWindow(SCROLLBAR, record_icon[14].icon_name, WS_OWNERDRAW | WS_VISIBLE,
                            record_icon[14].rc.x, record_icon[14].rc.y, record_icon[14].rc.w,
@@ -678,7 +643,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          sif_power.nMin = 0;
          sif_power.nMax = 254;//音量最大值为63
          sif_power.nValue = 220;//初始音量值
-         sif_power.TrackSize = 15;//滑块值
+         sif_power.TrackSize = 29;//滑块值
          sif_power.ArrowSize = 0;//两端宽度为0（水平滑动条）
          
          HWND wnd;
@@ -690,7 +655,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为pdPASS */
          xReturn = xTaskCreate((TaskFunction_t )(void(*)(void*))App_PlayRecord,  /* 任务入口函数 */
                             (const char*    )"App_PlayMusic",          /* 任务名字 */
-                            (uint16_t       )3*1024/4,                   /* 任务栈大小FreeRTOS的任务栈以字为单位 */
+                            (uint16_t       )2*1024/4,                   /* 任务栈大小FreeRTOS的任务栈以字为单位 */
                             (void*          )hwnd,                     /* 任务入口函数参数 */
                             (UBaseType_t    )5,                        /* 任务的优先级 */
                             (TaskHandle_t  )&h_play_record);           /* 任务控制块指针 */
@@ -859,7 +824,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                   RC.h = 120;
                   RC.x = (GUI_XSIZE - RC.w) >> 1;
                   RC.y = (GUI_YSIZE - RC.h) >> 1;
-                  SelectDialogBox(hwnd, &RC, L"没有检测到SD卡\n请确认SD已插入。", L"错误", &ops);    // 显示错误提示框
+                  SelectDialogBox(hwnd, RC, L"没有检测到SD卡\n请确认SD已插入。", L"错误", &ops);    // 显示错误提示框
                   break;
                 }
                 f_mkdir(RECORDERDIR);
@@ -886,7 +851,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
               BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为pdPASS */
               xReturn = xTaskCreate((TaskFunction_t )(void(*)(void*))App_Record,  /* 任务入口函数 */
                             (const char*    )"Record Task",       /* 任务名字 */
-                            (uint16_t       )4*1024/4,            /* 任务栈大小FreeRTOS的任务栈以字为单位 */
+                            (uint16_t       )(2*1024 + 512)/4,            /* 任务栈大小FreeRTOS的任务栈以字为单位 */
                             (void*          )recfilename,         /* 任务入口函数参数 */
                             (UBaseType_t    )5,                   /* 任务的优先级 */
                             (TaskHandle_t  )&h_record);           /* 任务控制块指针 */
@@ -1152,7 +1117,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       {
         PAINTSTRUCT ps;
         HDC hdc;//屏幕hdc
-        RECT rc = {181, 3, 75, 20};
+        RECT rc = {471, 13, 115, 34};
 
         //开始绘制
         hdc = BeginPaint(hwnd, &ps); 
@@ -1165,15 +1130,19 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       
       case WM_ERASEBKGND:
       {
-         HDC hdc =(HDC)wParam;
-         RECT rc =*(RECT*)lParam;
-         //GetClientRect(hwnd, &rc_cli);//获取客户区位置信息
-         SetBrushColor(hdc, MapRGB(hdc, 250,0,0));
-         FillRect(hdc, &rc); 
-         
-         BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_bk, rc.x, rc.y, SRCCOPY);         
- 
-         return TRUE;
+        HDC hdc =(HDC)wParam;
+        RECT rc = {0, 0, 293, GUI_YSIZE};
+        RECT rc1 = {293, 0, 507, GUI_YSIZE};
+        RECT rc_grad = {293, 0, 5, GUI_YSIZE};
+
+        SetBrushColor(hdc, MapRGB(hdc, 100, 238, 251));
+        FillRect(hdc, &rc);
+        SetBrushColor(hdc, MapRGB(hdc, 243, 142, 234)); 
+        FillRect(hdc, &rc1);
+        
+        GradientFillRect(hdc, &rc_grad, MapRGB(hdc, 150, 150, 150), MapRGB(hdc, 243, 142, 234), FALSE);
+
+        return TRUE;
       }
 
       //关闭窗口消息处理case
@@ -1190,7 +1159,6 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       {
         vTaskResume(h_play_record);
         BUGLE_STATE = 0;
-        DeleteDC(hdc_bk);
         chgsch = 0;
         RecordFlag = 2;
         Replay = 0;

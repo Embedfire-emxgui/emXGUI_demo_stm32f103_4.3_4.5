@@ -7,8 +7,8 @@
 /...
 /----------------------------------------------------------------------------*/
 
-#ifndef	__EMXGUI_H_20190904_1705__
-#define	__EMXGUI_H_20190904_1705__
+#ifndef	__EMXGUI_H_20191127_1602__
+#define	__EMXGUI_H_20191127_1602__
 
 #ifdef	__cplusplus
 extern	"C"{
@@ -1666,19 +1666,21 @@ typedef	struct	{
  */
 
 /// Listbox 私有的风格标志
+#define	LBS_ALIGNMASK			0x0003 //文字对齐mask码.
+#define	LBS_LEFTTEXT			0x0000 //文字左对齐.
+#define	LBS_CENTERTEXT			0x0001 //文字中间对齐.
+#define	LBS_RIGHTTEXT			0x0002 //文字右对齐.
+
 //#define LBS_SORT              0x0002L
-//#define LBS_NOREDRAW          0x0004L
+
 //#define LBS_MULTIPLESEL       0x0008L
-#define LBS_LINE    		  0x0010L //列表项之间有分行线条.
-//#define LBS_OWNERDRAWVARIABLE 0x0020L
-//#define LBS_HASSTRINGS        0x0040L
-//#define LBS_USETABSTOPS       0x0080L
-//#define LBS_NOINTEGRALHEIGHT  0x0100L
+
 //#define LBS_MULTICOLUMN       0x0200L
 //#define LBS_WANTKEYBOARDINPUT 0x0400L
 //#define LBS_EXTENDEDSEL       0x0800L
 //#define LBS_DISABLENOSCROLL   0x1000L
 //#define LBS_NODATA            0x2000L
+#define LBS_LINE    		  0x2000L //列表项之间有分行线条.
 #define LBS_NOSEL             0x4000L //没有可选择项.
 #define LBS_NOTIFY            0x8000L //产生额外的通知码(0x80值以上的 LBN_xxx).
 
@@ -2147,8 +2149,16 @@ BOOL	BMP_DrawEx(HDC hdc,int x,int y,GUI_GET_DATA *read_data,const RECT *lprc);
 typedef struct	tagGIF_DECODE* HGIF;
 typedef	S32	GIF_DELAY;
 
+typedef	struct	tagGIF_INFO
+{
+	U16 FrameCount;  //帧数量.
+	U16	Width;       //图像宽度.
+	U16	Height;      //图像高度.
+	U16 Rsv;         //保留.
+}GIF_INFO;
+
 HGIF    GIF_Open(const void *dat);
-BOOL    GIF_GetInfo(HGIF hGIF,IMAGE_INFO *Info);
+BOOL	GIF_GetInfo(HGIF gif_dec,GIF_INFO *Info);
 UINT    GIF_GetFrameCount(HGIF hGIF);
 GIF_DELAY    GIF_GetFrameDelay(HGIF gif_dec,UINT frame_idx);
 GIF_DELAY    GIF_DrawFrame(HDC hdc,int x,int y,COLORREF bk_color,HGIF hGIF,UINT frame_idx);
@@ -2336,11 +2346,11 @@ HFONT	XFT_CreateFont(const void *xft_dat);
 HFONT	XFT_CreateFontEx(FN_XFT_GetData *pfnGetData,LONG lParam);
 
 /*===================================================================================*/
+
 #include "gui_os_port.h"
 #include "emXGUI_Arch.h"
 #include "gui_drv.h"
 #include "web_color.h"
-
 
 /*===================================================================================*/
 
