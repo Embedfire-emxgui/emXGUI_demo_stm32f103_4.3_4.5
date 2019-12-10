@@ -291,7 +291,8 @@ static void Ent_ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
   
   SetPenSize(hdc, 2);
 
-  InflateRect(&rc, 0, -1);
+  InflateRect(&rc, 0, -11);
+  rc.w = 36;
   
   for(int i=0; i<4; i++)
   {
@@ -466,7 +467,7 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                   (TaskHandle_t*  )&network_task_handle);     /* 任务控制块指针 */
                       
       CreateWindow(BUTTON, L"O", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY |WS_OWNERDRAW|WS_VISIBLE,
-                  740, 10, 36, 36, hwnd, eID_BTN_EXIT, NULL, NULL); 
+                  740, 0, 60, 46, hwnd, eID_BTN_EXIT, NULL, NULL); 
                   
       CreateWindow(GROUPBOX, L"通讯协议", WS_VISIBLE, 400, 50, 395, 98, hwnd, ID_MODE_GROUP, NULL, NULL);
       SetWindowErase(GetDlgItem(hwnd, ID_MODE_GROUP), group_erase);

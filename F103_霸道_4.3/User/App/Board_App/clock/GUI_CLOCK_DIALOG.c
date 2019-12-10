@@ -12,7 +12,8 @@
 #define ICON_BTN_NUM     3     // 按钮数量
 #define ICON_TEXT_NUM   (1 + ICON_BTN_NUM)    // 文本数量
 
-#define CLOCK_BACK_COLOR     230, 230, 230
+//#define CLOCK_BACK_COLOR     230, 230, 230
+#define CLOCK_BACK_COLOR     208, 208, 240//188, 213, 253
 
 struct
 {
@@ -30,7 +31,7 @@ const uint8_t month_list[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 const clock_icon_t clock_icon[] = {
 
   /* 按钮 */
-  {L"O",              {740,  25,  36,  36},  ID_CLOCK_EXIT},            // 0. 退出
+  {L"O",              {740,  0,  60,  60},  ID_CLOCK_EXIT},            // 0. 退出
   {L"2019年",         {456, 164, 230, 230},  ID_CLOCK_DATE},            // 1. 日期（年月日周）
   {L" ",              {113, 164, 230, 230},  ID_CLOCK_TIME},            // 2. 表盘显示区域
   
@@ -80,7 +81,8 @@ static void exit_owner_draw(DRAWITEM_HDR *ds) //绘制一个按钮外观
   
   SetPenSize(hdc, 2);
 
-  InflateRect(&rc, 0, -1);
+  InflateRect(&rc, 0, -25);
+  rc.w = 36;
   
   for(int i=0; i<4; i++)
   {

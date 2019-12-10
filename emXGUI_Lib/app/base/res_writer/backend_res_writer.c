@@ -674,7 +674,7 @@ FRESULT BurnFile(void)
   }
   f_closedir(&dir);
   
-  SetWindowText(wnd_res_writer_info_textbox,L"  Erasing FLASH,it will take a long \r\ntime,please wait...");
+  SetWindowText(wnd_res_writer_info_textbox,L"  Erasing FLASH,it will take a long time,please wait...");
   GUI_msleep(20);
   
   BURN_INFO("正在进行整片擦除，时间很长，请耐心等候...");  

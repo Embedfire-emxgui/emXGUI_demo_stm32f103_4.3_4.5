@@ -91,7 +91,7 @@
 
 
 #define	_USE_LFN	2
-#define	_MAX_LFN	255
+#define	_MAX_LFN	128//225
 /* The _USE_LFN option switches the LFN feature.
 /
 /   0: Disable LFN feature. _MAX_LFN has no effect.

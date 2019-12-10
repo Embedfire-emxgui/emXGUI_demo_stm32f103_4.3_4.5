@@ -8,6 +8,7 @@
 #include "diskio.h"
 #include "stm32f10x.h"
 #include "./sdio/bsp_sdio_sdcard.h"
+#include "GUI_AppDef.h"
 
 /* 为每个设备定义一个物理编号 */
 #define ATA			           0     // SD卡
@@ -99,13 +100,27 @@ DRESULT disk_read (
 					{
 						break;
 					}
-					memcpy(buff, scratch, SD_BLOCKSIZE);
+          /* 进入临界段，临界段可以嵌套 */
+          taskENTER_CRITICAL();
+          
+          memcpy(buff, scratch, SD_BLOCKSIZE);
+          
+          /* 退出临界段 */
+          taskEXIT_CRITICAL();
+					
 					buff += SD_BLOCKSIZE;
 		    }
 		    return res;
 			}
 			
-			SD_state=SD_ReadMultiBlocks(buff,(uint64_t)sector*SD_BLOCKSIZE,SD_BLOCKSIZE,count);
+      /* 进入临界段，临界段可以嵌套 */
+//      taskENTER_CRITICAL();
+      
+			SD_state=SD_ReadMultiBlocks(buff,(uint64_t)(sector*SD_BLOCKSIZE),SD_BLOCKSIZE,count);
+      
+      /* 退出临界段 */
+//      taskEXIT_CRITICAL();
+      
 		  if(SD_state==SD_OK)
 			{
 				/* Check if the Transfer is finished */
@@ -156,7 +171,14 @@ DRESULT disk_write (
 
 				while (count--) 
 				{
-					memcpy( scratch,buff,SD_BLOCKSIZE);
+          /* 进入临界段，临界段可以嵌套 */
+          taskENTER_CRITICAL();
+          
+          memcpy(scratch,buff,SD_BLOCKSIZE);
+          
+          /* 退出临界段 */
+          taskEXIT_CRITICAL();
+					
 					res = disk_write(ATA,(void *)scratch, sector++, 1);
 					if (res != RES_OK) 
 					{

@@ -28,6 +28,8 @@
 
 #include "FreeRTOS.h"					//FreeRTOS使用		  
 #include "task.h" 
+#include "usb_lib.h"
+#include "usb_istr.h"
 
 /** @addtogroup STM32F10x_StdPeriph_Template
   * @{
@@ -167,6 +169,30 @@ void SysTick_Handler(void)
 /*void PPP_IRQHandler(void)
 {
 }*/
+
+/*
+ * 函数名：USB_LP_CAN1_RX0_IRQHandler
+ * 描述  ：USB低优先级中断请求
+ * 输入  ：无		 
+ * 输出  ：无
+ */
+
+void USB_LP_CAN1_RX0_IRQHandler(void)
+{
+
+	USB_Istr();
+
+}
+/*
+ * 函数名：USB_HP_CAN1_TX_IRQHandler
+ * 描述  ：USB高优先级中断请求 或发送中断
+ * 输入  ：无		 
+ * 输出  ：无
+ */
+void USB_HP_CAN1_TX_IRQHandler(void)
+{
+	CTR_HP();
+}
 
 /**
   * @}

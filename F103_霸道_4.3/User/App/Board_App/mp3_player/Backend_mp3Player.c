@@ -181,7 +181,18 @@ void vs1053_player(uint8_t *filepath, uint8_t vol, HDC hdc)
 				default:
 					f_kbps=VS_Get_HeadInfo();
 					break;
-			}				
+			}	
+
+        //找不到歌词文件
+        if (lrc.flag == 0)
+        {
+           
+           SetWindowText(wnd_lrc3,L"请在SDCard放入相应的歌词文件(*.lrc)");
+           SetWindowText(wnd_lrc1,L"");
+           SetWindowText(wnd_lrc2,L"");
+           SetWindowText(wnd_lrc4,L"");
+           SetWindowText(wnd_lrc5,L"");
+        }
 		}
 		
 		time++;
@@ -256,16 +267,7 @@ void vs1053_player(uint8_t *filepath, uint8_t vol, HDC hdc)
         }                  
              
         }
-        //找不到歌词文件
-        else
-        {
-           
-           SetWindowText(wnd_lrc3,L"请在SDCard放入相应的歌词文件(*.lrc)");
-           SetWindowText(wnd_lrc1,L" ");
-           SetWindowText(wnd_lrc2,L" ");
-           SetWindowText(wnd_lrc4,L" ");
-           SetWindowText(wnd_lrc5,L" ");
-        }
+        
 		}
 	}
   

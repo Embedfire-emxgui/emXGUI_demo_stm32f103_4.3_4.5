@@ -249,7 +249,8 @@ static void exit_owner_draw(DRAWITEM_HDR *ds) //绘制一个按钮外观
   
   SetPenSize(hdc, 2);
 
-  InflateRect(&rc, 0, -5);
+  InflateRect(&rc, 0, -13);
+  rc.w = 36;
   
   for(int i=0; i<4; i++)
   {
@@ -840,7 +841,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
                             (TaskHandle_t  )&h_music);          /* 任务控制块指针 */
         
          CreateWindow(BUTTON, L"O", BS_FLAT | BS_NOTIFY |WS_OWNERDRAW|WS_VISIBLE|WS_TRANSPARENT,
-                        740, 7, 36, 36, hwnd, ID_EXIT, NULL, NULL); 
+                        740, 0, 60, 45, hwnd, ID_EXIT, NULL, NULL); 
 
 
          /*********************音量值滑动条******************/
@@ -889,11 +890,11 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
                             (const char*    )"App_MusicList",       /* 任务名字 */
                             (uint16_t       )(2*1024+256)/4,              /* 任务栈大小FreeRTOS的任务栈以字为单位 */
                             (void*          )NULL,                  /* 任务入口函数参数 */
-                            (UBaseType_t    )8,                     /* 任务的优先级 */
+                            (UBaseType_t    )6,                     /* 任务的优先级 */
                             (TaskHandle_t  )&h1);                   /* 任务控制块指针 */
                             
                   if(xReturn == pdPASS )
-                    GUI_ERROR("GUI Thread Create succeed！");
+                    GUI_DEBUG("GUI Thread Create succeed！");
                   else
                   {
                     GUI_ERROR("GUI Thread Create failed！");

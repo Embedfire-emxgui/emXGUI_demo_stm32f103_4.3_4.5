@@ -267,7 +267,8 @@ static void Ent_ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
   
   SetPenSize(hdc, 2);
 
-  InflateRect(&rc, 0, -1);
+  InflateRect(&rc, 0, -11);
+  rc.w = 36;
   
   for(int i=0; i<4; i++)
   {
@@ -416,7 +417,7 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                   (TaskHandle_t*  )&wifi_task_handle);     /* 任务控制块指针 */
                       
       CreateWindow(BUTTON, L"O", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY |WS_OWNERDRAW|WS_VISIBLE,
-                  740, 10, 36, 36, hwnd, eID_BTN_EXIT, NULL, NULL); 
+                  740, 0, 60, 46, hwnd, eID_BTN_EXIT, NULL, NULL); 
 
       rc.x = 642;
       rc.y = 198;
@@ -534,7 +535,10 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       FillRect(hdc, &rc);
 
       rc.h = 50 ;
+//      EnableAntiAlias(hdc, TRUE);
       GradientFillRect(hdc, &rc, MapRGB(hdc, 1, 218, 254), MapRGB(hdc, 1, 168, 255), FALSE);
+//      EnableAntiAlias(hdc, FALSE);
+      
       SetTextColor(hdc, MapRGB(hdc, 255, 255, 255));
       DrawText(hdc, L"Wi-Fi", -1, &rc, DT_VCENTER|DT_CENTER);
 

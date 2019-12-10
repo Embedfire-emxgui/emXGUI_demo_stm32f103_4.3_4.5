@@ -34,7 +34,7 @@
   #include "gui_resource_port.h"
 #endif
 
-#if(GUI_FS_EN)
+#if(GUI_RES_FS_EN)
   #include "gui_fs_port.h"
 #endif
 

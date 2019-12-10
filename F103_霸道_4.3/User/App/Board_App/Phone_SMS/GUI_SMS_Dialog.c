@@ -179,7 +179,8 @@ static void SMS_ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
 
   SetPenSize(hdc, 2);
 
-  InflateRect(&rc, 0, -1);
+  InflateRect(&rc, 0, -23);
+  rc.w = 36;
   
   for(int i=0; i<4; i++)
   {
@@ -399,7 +400,7 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       //InflateRectEx(&rc, -3, -112, -3, -101);
       //MakeMatrixRect(m_rc, &rc, 0, 0, 3, 4);
 	    
-      CreateWindow(BUTTON, L"O",	WS_VISIBLE|WS_OWNERDRAW|WS_TRANSPARENT, 740, 22, 36, 36, hwnd, eID_SMS_EXIT, NULL, NULL);
+      CreateWindow(BUTTON, L"O",	WS_VISIBLE|WS_OWNERDRAW|WS_TRANSPARENT, 740, 0, 60, 60, hwnd, eID_SMS_EXIT, NULL, NULL);
       CreateWindow(BUTTON, L"清除",	WS_VISIBLE|WS_OWNERDRAW, 590, 433, 84, 40, hwnd, eID_SMS_CLEAR, NULL, NULL);
       CreateWindow(BUTTON, L"删除全部短信",	WS_VISIBLE|WS_OWNERDRAW, 395, 433, 160, 40, hwnd, eID_SMS_DEL,  NULL, NULL);
       CreateWindow(BUTTON, L"发送", WS_VISIBLE|WS_OWNERDRAW, 710, 433, 84, 40, hwnd, eID_SMS_SEND, NULL, NULL);

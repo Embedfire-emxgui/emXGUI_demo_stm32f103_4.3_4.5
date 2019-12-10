@@ -16,6 +16,7 @@ extern void SetRGBColor(uint32_t rgb);
 extern void SetColorValue(uint8_t r,uint8_t g,uint8_t b);
 extern const unsigned char RGBdesktop[];
 static COLORREF color_bg;       // 透明控件的背景颜色
+#define RGBLED_BACK_COLOR     228, 228, 240
 //static BITMAP RGBdesktop_0;
 /**********************分界线*********************/
 
@@ -36,7 +37,7 @@ struct leddlg
 
 icon_S GUI_RGBLED_Icon[18] = 
 {
-      {"tuichu",           {740, 22, 36, 36},       FALSE},//退出按键
+      {"tuichu",           {740, 0, 60, 60},       FALSE},//退出按键
       {"biaotilan",        {100,0,600,80},      FALSE},//APP标题栏
       {"APPHouse",         {425,80,275,275},      FALSE},//APP房子图标
       {"hongdeng",         {105-12, 382-20, 80, 110},  FALSE},//红灯图标
@@ -152,7 +153,7 @@ static void GUI_RGBLED_ScrollbarOwnerDraw(DRAWITEM_HDR *ds)
 	hdc = ds->hDC;
 	GetClientRect(hwnd, &rc_cli);
 
-  SetBrushColor(hdc, MapRGB(hdc, 240, 240, 240));
+  SetBrushColor(hdc, MapRGB(hdc, RGBLED_BACK_COLOR));
   FillRect(hdc, &rc_cli);
          
   EnableAntiAlias(hdc, TRUE);
@@ -168,7 +169,7 @@ static void GUI_RGBLED_ScrollbarOwnerDraw(DRAWITEM_HDR *ds)
   SendMessage(hwnd, SBM_GETTRACKRECT, 0, (LPARAM)&rc);   
   
 	//绘制滑块
-  SetBrushColor(hdc, MapRGB(hdc, 56, 123, 245));
+  SetBrushColor(hdc, MapRGB(hdc, 1, 218, 254));
   FillCircle(hdc, rc.x + rc.w/2, rc.h/2, MIN(rc.w, rc.h)/2);
   EnableAntiAlias(hdc, FALSE);
 }
@@ -193,7 +194,8 @@ void GUI_RGBLED_HomeOwnerDraw(DRAWITEM_HDR *ds)
 
   SetPenSize(hdc, 2);
 
-  InflateRect(&rc, 0, -1);
+  InflateRect(&rc, 0, -23);
+  rc.w = 36;
   
   for(int i=0; i<4; i++)
   {
@@ -252,7 +254,7 @@ static void GUI_RGBPCTTEXT_OwnerDraw(DRAWITEM_HDR *ds)
   //获取控件的位置大小信息
   GetClientRect(hwnd, &rc_cli);
   
-  SetBrushColor(hdc, MapRGB(hdc, 240, 240, 240));
+  SetBrushColor(hdc, MapRGB(hdc, RGBLED_BACK_COLOR));
   FillRect(hdc, &rc_cli);
 
   GetWindowText(ds->hwnd, wbuf, 128); //获得按钮控件的文字  
@@ -283,7 +285,7 @@ static void radiobox_owner_draw(DRAWITEM_HDR *ds) // 单选按钮外观
 	hdc = ds->hDC;   //button的绘图上下文句柄.
 	rc = ds->rc;     //button的绘制矩形区.
   
-  SetBrushColor(hdc, MapRGB(hdc, 240, 240, 240));
+  SetBrushColor(hdc, MapRGB(hdc, RGBLED_BACK_COLOR));
   FillRect(hdc, &rc);
   GetWindowText(ds->hwnd, wbuf, 128); //获得按钮控件的文字 
 
@@ -608,14 +610,16 @@ static	LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         RECT rc = {0, 0, GUI_XSIZE, GUI_YSIZE};
         RECT rc_title_grad = {0, 80, GUI_XSIZE, 5};
         
-        SetBrushColor(hdc, MapRGB(hdc, 240, 240, 240));
+        SetBrushColor(hdc, MapRGB(hdc, RGBLED_BACK_COLOR));
         FillRect(hdc, &rc);
+        
 
         rc.h = 80;
         SetBrushColor(hdc, MapRGB(hdc, 1, 218, 254));
         FillRect(hdc, &rc);//, MapRGB(hdc, 1, 218, 254), MapRGB(hdc, 1, 168, 255), FALSE);
+//      GradientFillRect(hdc, &rc, MapRGB(hdc, 64, 189, 162), MapRGB(hdc, 36, 158, 189), TRUE);
         
-        GradientFillRect(hdc, &rc_title_grad, MapRGB(hdc, 150, 150, 150), MapRGB(hdc, 240, 240, 240), TRUE);
+        GradientFillRect(hdc, &rc_title_grad, MapRGB(hdc, 150, 150, 150), MapRGB(hdc, RGBLED_BACK_COLOR), TRUE);
         
         EndPaint(hwnd, &ps);
         break;

@@ -5,7 +5,8 @@
 #include "ff.h"
 #include "x_libc.h"
 #include "GUI_AppDef.h"
-#include "./beep/bsp_beep.h"   
+#include "./beep/bsp_beep.h" 
+#include "emxgui_png.h"
 
 /* 按钮 ID */
 enum 
@@ -19,6 +20,48 @@ enum
 static uint8_t sw_flag    = 0;
 static uint8_t tick_flag  = 0;
 static uint8_t press_flag = 3;
+
+/********************************************************************************************
+ *                                     蜂鸣器控制图片                                       *
+ ********************************************************************************************/
+#define GUI_BEEPER_PIC_EN     0    // 内存不够，不能用
+
+#if GUI_BEEPER_PIC_EN
+#define GUI_BEEPER_HORN_PIC         "0:/beeper_horn.png"
+#define GUI_BEEPER_HORN1_PIC        "0:/beeper_horn1.png"
+#define GUI_BEEPER_HORN2_PIC        "0:/beeper_horn2.png"
+#define GUI_BEEPER_HORN3_PIC        "0:/beeper_horn3.png"
+
+typedef enum
+{
+  hdc_beeper_horn = 0,
+	hdc_beeper_horn1,
+	hdc_beeper_horn2,
+	hdc_beeper_horn3,
+  
+	hdc_beeper_end,
+}hdc_beep_png_t;
+
+typedef struct{
+	char *pic_name;      // 图片名
+	int w;               // 图片宽
+	int h;               // 图片高
+	hdc_beep_png_t id;   // hdc 编号
+}beeper_hdc_t;
+
+const beeper_hdc_t beeper_png_info[hdc_beeper_end] = 
+{
+  {GUI_BEEPER_HORN_PIC,    103, 190,   hdc_beeper_horn},
+  {GUI_BEEPER_HORN1_PIC,    33,  74,    hdc_beeper_horn1},
+  {GUI_BEEPER_HORN2_PIC,    53, 148,    hdc_beeper_horn2},
+  {GUI_BEEPER_HORN3_PIC,    74, 220,   hdc_beeper_horn3},
+};
+
+HDC hdc_beeper_png[hdc_beeper_end];
+#endif
+/********************************************************************************************
+*                             蜂鸣器控制图片 END                                            *
+********************************************************************************************/
 
 //退出按钮重绘制
 static void ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
@@ -40,7 +83,8 @@ static void ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
 
   SetPenSize(hdc, 2);
 
-  InflateRect(&rc, 0, -1);
+  InflateRect(&rc, 0, -11);
+  rc.w = 36;
   
   for(int i=0; i<4; i++)
   {
@@ -158,6 +202,27 @@ static void press_button_OwnerDraw(DRAWITEM_HDR *ds)
   SetBrushColor(hdc, MapRGB(hdc, 50, 240, 240));
   FillCircle(hdc, rc.w/2, rc.h/2, MIN(rc.w, rc.h)/2);
   
+#if GUI_BEEPER_PIC_EN
+  
+  BitBlt(hdc, 54, 77, 103, 190, hdc_beeper_png[hdc_beeper_horn], 0, 0, SRCCOPY);
+  
+  switch (press_flag)
+  {
+    case 3:
+      BitBlt(hdc, 200, 62, 74, 220, hdc_beeper_png[hdc_beeper_horn3], 0, 0, SRCCOPY);
+    
+    case 2:
+      BitBlt(hdc, 187, 98, 53, 148, hdc_beeper_png[hdc_beeper_horn2], 0, 0, SRCCOPY);
+
+    case 1:
+      BitBlt(hdc, 174, 135, 33, 74, hdc_beeper_png[hdc_beeper_horn1], 0, 0, SRCCOPY);
+  
+  default:
+    break;
+  }
+
+#else
+
   SetBrushColor(hdc, MapRGB(hdc, 50, 50, 50));
   
   switch (press_flag)
@@ -175,6 +240,8 @@ static void press_button_OwnerDraw(DRAWITEM_HDR *ds)
     break;
   }
   
+#endif
+  
   EnableAntiAlias(hdc, FALSE);
 }
 
@@ -188,7 +255,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       GetClientRect(hwnd, &rc); 
             
       CreateWindow(BUTTON, L"O", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY | WS_OWNERDRAW | WS_VISIBLE,
-                  740, 10, 36, 36, hwnd, ID_BEEPER_EXIT, NULL, NULL); 
+                  740, 0, 60, 46, hwnd, ID_BEEPER_EXIT, NULL, NULL); 
 
       CreateWindow(BUTTON, L"滴答", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY | WS_OWNERDRAW | WS_VISIBLE,
                   71, 177, 84, 166, hwnd, ID_BEEPER_TICK, NULL, NULL); 
@@ -198,7 +265,45 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
       CreateWindow(BUTTON, L"长鸣", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY | WS_OWNERDRAW | WS_VISIBLE,
                   650, 177, 84, 166, hwnd, ID_BEEPER_SW, NULL, NULL); 
+#if GUI_BEEPER_PIC_EN
+      BOOL res;
+      u8 *pic_buf;
+      u32 pic_size;
+      PNG_DEC *png_dec;
+      BITMAP png_bm;
       
+      
+      for(uint8_t xC=0; xC<hdc_beeper_end; xC++)
+      {
+        /* 创建 HDC */
+        hdc_beeper_png[xC] = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888, beeper_png_info[xC].w, beeper_png_info[xC].h);
+        ClrDisplay(hdc_beeper_png[xC], NULL, 0);
+        if (strstr(beeper_png_info[xC].pic_name, "0:/") != NULL)
+        {
+          res = FS_Load_Content(beeper_png_info[xC].pic_name, (char**)&pic_buf, &pic_size);    // 资源在 SD 卡
+        }
+        else
+        {
+          res = RES_Load_Content(beeper_png_info[xC].pic_name, (char**)&pic_buf, &pic_size);     // 资源在外部 FLASH
+        }
+        
+        if(res)
+        {
+          png_dec = PNG_Open(pic_buf, pic_size);
+          PNG_GetBitmap(png_dec, &png_bm);
+          DrawBitmap(hdc_beeper_png[xC], 0, 0, &png_bm, NULL);
+          PNG_Close(png_dec);
+        }
+        else
+        {
+          GUI_ERROR("Can not find RES:%s",beeper_png_info[xC].pic_name);
+          res_not_found_flag = TRUE;    // 标记没有找到资源文件
+        }
+        
+        /* 释放图片内容空间 */
+        RES_Release_Content((char **)&pic_buf);
+      }
+#endif
       SetTimer(hwnd, 5, 10, TMR_START | TMR_SINGLE, NULL);
       SetTimer(hwnd, 6, 1000, TMR_START | TMR_SINGLE, NULL);
       break;
@@ -370,7 +475,13 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       press_flag = 3;
       
       BEEP_OFF;
-      
+    #if GUI_BEEPER_PIC_EN
+      for(uint8_t xC=0; xC<hdc_beeper_end; xC++)
+      {
+        /* 释放 HDC */
+        DeleteDC(hdc_beeper_png[xC]);
+      }
+    #endif
       return PostQuitMessage(hwnd);	
     } 
 

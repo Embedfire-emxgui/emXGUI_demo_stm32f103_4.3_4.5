@@ -88,7 +88,6 @@
 "..\..\output\boot_logo.o"
 "..\..\output\gui_board_app_desktop.o"
 "..\..\output\clistmenu.o"
-"..\..\output\gui_demo_slidewindow.o"
 "..\..\output\gui_app_desktop.o"
 "..\..\output\gui_demo_showwave.o"
 "..\..\output\gui_demo_settings.o"

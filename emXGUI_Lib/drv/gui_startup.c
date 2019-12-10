@@ -109,7 +109,7 @@ void	GUI_Startup(void)
 	} 
 	GUI_SetDefFont(hFont);  //设置默认的字体
 
-#if(GUI_FS_EN)  
+#if(GUI_RES_FS_EN)  
    //文件系统初始化
   if(FileSystem_Init() != TRUE)
   {

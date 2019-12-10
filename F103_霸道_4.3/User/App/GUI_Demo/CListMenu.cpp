@@ -156,6 +156,8 @@ void CListMenu::draw_icon_obj(HDC hdc, struct __x_obj_item *obj, u32 flag, u32 s
     BITMAPINFO info;
     int x, y;
     //HDC hdc_ico;
+  
+    iconFont_100   = GUI_Init_Extern_Font_Stream(GUI_ICON_FONT_100);
 
     //hdc_ico =CreateMemoryDC(BM_DEVICE,obj->rc.w,obj->rc.h);
     rc = obj->rc;
@@ -269,9 +271,10 @@ void CListMenu::draw_icon_obj(HDC hdc, struct __x_obj_item *obj, u32 flag, u32 s
     rc0.w = rc.w;
     rc0.h = rc.h * 1 / 3;
     rc0.x = rc.x;
-    rc0.y = rc.y + rc.h - rc0.h;
+    rc0.y = rc.y + rc.h - rc0.h - 3;
     DrawText(hdc, obj->pszText, -1, &rc0, DT_VCENTER | DT_CENTER);
-
+    
+    DeleteFont(iconFont_100);
 }
 
 #if 0
@@ -788,9 +791,9 @@ LRESULT CListMenu::DrawFrame(HDC hdc, HWND hwnd)
             i = MIN(0 - obj->rc.x, page_num*rc_list.w);
 
             rc.w = 150;
-            rc.h = 20;
+            rc.h = 10;
             rc.x = (rc_main.w - rc.w) >> 1;
-            rc.y = rc_main.h - rc.h - 15;
+            rc.y = rc_main.h - rc.h - 10;
             MakeProgressRect(m_rc, &rc, page_num*rc_list.w, i, PB_ORG_LEFT);
 
             SetPenColor(hdc, MapRGB(hdc, 250, 220, 220));
@@ -798,9 +801,9 @@ LRESULT CListMenu::DrawFrame(HDC hdc, HWND hwnd)
             //太小的矩形不画
             if (m_rc[0].w > 10)
             {
-                FillRoundRect(hdc, &m_rc[0], 10);
+                FillRoundRect(hdc, &m_rc[0], 5);
             }
-            DrawRoundRect(hdc, &rc, 10);
+            DrawRoundRect(hdc, &rc, 5);
         }
         if(obj->rc.x >= 0)
         {
@@ -926,7 +929,7 @@ LRESULT CListMenu::OnCreate(HWND hwnd, list_menu_cfg_t *cfg)
 
     OffsetRect(&rc, 0, rc.h);
     rc.h = rc_main.h - rc.y;
-    InflateRectEx(&rc, 0, 0, 0, -28);
+    InflateRectEx(&rc, 0, 0, 0, -15);
     rc_list = rc;
 
 
@@ -1530,19 +1533,18 @@ LRESULT	CListMenu::OnTimer(HWND hwnd, int tmr_id)
                     {
 
                         //x =MIN(rc_list.w>>3,x-x_move_to);
-//                        if ((x - x_move_to) > 30)
-//                        {
-//                            x = MIN(obj->rc.w >> 1, x - x_move_to);
-//                        }
-//                        else if ((x - x_move_to) > 20)
-//                        {
-//                            x = MIN(obj->rc.w >> 2, x - x_move_to);
-//                        }
-//                        else
-//                        {
-//                            x = MIN(10, x - x_move_to);
-//                        }
-                        x = x - x_move_to;    // 一次到位
+                        if ((x - x_move_to) > 60)
+                        {
+                            x = MIN(obj->rc.w >> 2, x - x_move_to);
+                        }
+                        else if ((x - x_move_to) > 20)
+                        {
+                            x = MIN(obj->rc.w >> 3, x - x_move_to);
+                        }
+                        else
+                        {
+                            x = MIN(3, x - x_move_to);
+                        }
 
                         OffsetObjs(-x, 0);
                         need_draw = TRUE;
@@ -1550,19 +1552,18 @@ LRESULT	CListMenu::OnTimer(HWND hwnd, int tmr_id)
                     else if (x < x_move_to)
                     {
                         //x =MIN(rc_list.w>>3,x_move_to-x);
-//                        if ((x_move_to - x) > 30)
-//                        {
-//                            x = MIN(obj->rc.w >> 1, x_move_to - x);
-//                        }
-//                        else if ((x_move_to - x) > 20)
-//                        {
-//                            x = MIN(obj->rc.w >> 1, x_move_to - x);
-//                        }
-//                        else
-//                        {
-//                            x = MIN(10, x_move_to - x);
-//                        }
-                        x = x_move_to - x;    // 一次到位
+                        if ((x_move_to - x) > 60)
+                        {
+                            x = MIN(obj->rc.w >> 2, x_move_to - x);
+                        }
+                        else if ((x_move_to - x) > 20)
+                        {
+                            x = MIN(obj->rc.w >> 3, x_move_to - x);
+                        }
+                        else
+                        {
+                            x = MIN(3, x_move_to - x);
+                        }
                         OffsetObjs(x, 0);
                         need_draw = TRUE;
                     }

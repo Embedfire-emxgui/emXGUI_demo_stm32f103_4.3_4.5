@@ -17,7 +17,7 @@ recorder_icon_t record_icon[] = {
    {L"U",        {79,  308, 64, 64},   ID_RECORD_STOP},      // 5. 停止录音
    {L"U",        {181, 308, 64, 64},   ID_RECORD_START},     // 6. 开始录音
    {L"U",        {181, 308, 72, 72},   ID_RECORD_PADNC},     // 7. 暂停继续
-   {L"O",        {740,  12, 36, 36},   ID_RECORD_EXIT},      // 8. 退出
+   {L"O",        {740,   0, 60, 48},   ID_RECORD_EXIT},      // 8. 退出
 
    {L"录音机",   {96,  85, 120, 30},   ID_RECORD_STATE},     // 9. 正在录音
    {L"00:00",    {106, 187,100, 30},   ID_RECORD_TIME},      // 10. 录音时长
@@ -29,6 +29,8 @@ recorder_icon_t record_icon[] = {
    {L" ",        {369, 423, 74, 30},   ID_RECORD_sPOWER},    // 15. 音量进度条
   
 };
+
+#define RECORDER_BACK_COLOR     95, 137, 159//188, 213, 253
 
 //音乐播放器句柄
 HWND	Recorer_hwnd;
@@ -224,7 +226,8 @@ static void exit_owner_draw(DRAWITEM_HDR *ds) //绘制一个按钮外观
   
   SetPenSize(hdc, 2);
 
-  InflateRect(&rc, 0, -1);
+  InflateRect(&rc, 0, -13);
+  rc.w = 36;
   
   for(int i=0; i<4; i++)
   {
@@ -423,7 +426,7 @@ static void draw_scrollbar(HWND hwnd, HDC hdc, COLOR_RGB32 back_c, COLOR_RGB32 P
   /* 背景 */
   GetClientRect(hwnd, &rc);//得到控件的位置
 
-  SetBrushColor(hdc,MapARGB(hdc, 0, 243, 142, 234));
+  SetBrushColor(hdc,MapARGB(hdc, 0, RECORDER_BACK_COLOR));
   FillRect(hdc, &rc);
 
   rc_scrollbar.x = rc.x;
@@ -520,7 +523,7 @@ static void listbox_owner_draw(DRAWITEM_HDR *ds)
   /* 背景 */
   GetClientRect(hwnd, &rc);//得到控件的位置
    
-  SetBrushColor(hdc, MapRGB(hdc, 243, 142, 234));
+  SetBrushColor(hdc, MapRGB(hdc, RECORDER_BACK_COLOR));
   FillRect(hdc, &rc);
   
   if (!SendMessage(hwnd,LB_GETCOUNT,0,0))
@@ -655,7 +658,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为pdPASS */
          xReturn = xTaskCreate((TaskFunction_t )(void(*)(void*))App_PlayRecord,  /* 任务入口函数 */
                             (const char*    )"App_PlayMusic",          /* 任务名字 */
-                            (uint16_t       )2*1024/4,                   /* 任务栈大小FreeRTOS的任务栈以字为单位 */
+                            (uint16_t       )3*1024/4,                   /* 任务栈大小FreeRTOS的任务栈以字为单位 */
                             (void*          )hwnd,                     /* 任务入口函数参数 */
                             (UBaseType_t    )5,                        /* 任务的优先级 */
                             (TaskHandle_t  )&h_play_record);           /* 任务控制块指针 */
@@ -820,8 +823,8 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                   ops.Flag = MB_ICONERROR;
                   ops.pButtonText = btn;
                   ops.ButtonCount = 2;
-                  RC.w = 180;
-                  RC.h = 120;
+                  RC.w = 300;
+                  RC.h = 200;
                   RC.x = (GUI_XSIZE - RC.w) >> 1;
                   RC.y = (GUI_YSIZE - RC.h) >> 1;
                   SelectDialogBox(hwnd, RC, L"没有检测到SD卡\n请确认SD已插入。", L"错误", &ops);    // 显示错误提示框
@@ -851,7 +854,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
               BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为pdPASS */
               xReturn = xTaskCreate((TaskFunction_t )(void(*)(void*))App_Record,  /* 任务入口函数 */
                             (const char*    )"Record Task",       /* 任务名字 */
-                            (uint16_t       )(2*1024 + 512)/4,            /* 任务栈大小FreeRTOS的任务栈以字为单位 */
+                            (uint16_t       )(3*1024)/4,            /* 任务栈大小FreeRTOS的任务栈以字为单位 */
                             (void*          )recfilename,         /* 任务入口函数参数 */
                             (UBaseType_t    )5,                   /* 任务的优先级 */
                             (TaskHandle_t  )&h_record);           /* 任务控制块指针 */
@@ -1135,12 +1138,12 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         RECT rc1 = {293, 0, 507, GUI_YSIZE};
         RECT rc_grad = {293, 0, 5, GUI_YSIZE};
 
-        SetBrushColor(hdc, MapRGB(hdc, 100, 238, 251));
+        SetBrushColor(hdc, MapRGB(hdc, RECORDER_BACK_COLOR));//130, 195, 213
         FillRect(hdc, &rc);
-        SetBrushColor(hdc, MapRGB(hdc, 243, 142, 234)); 
+        SetBrushColor(hdc, MapRGB(hdc, RECORDER_BACK_COLOR)); 
         FillRect(hdc, &rc1);
         
-        GradientFillRect(hdc, &rc_grad, MapRGB(hdc, 150, 150, 150), MapRGB(hdc, 243, 142, 234), FALSE);
+        GradientFillRect(hdc, &rc_grad, MapRGB(hdc, 50, 50, 50), MapRGB(hdc, 95, 137, 159), FALSE);
 
         return TRUE;
       }

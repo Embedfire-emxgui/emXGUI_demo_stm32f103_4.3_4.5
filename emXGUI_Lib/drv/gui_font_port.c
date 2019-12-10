@@ -298,8 +298,10 @@ HFONT GUI_Init_Extern_Font(void)
    /* 使用流设备加载字体，按需要读取 */
   {
     defaultFont    = GUI_Init_Extern_Font_Stream(GUI_DEFAULT_EXTERN_FONT); 
+    
+    /* 使用时在创建 */
 //    controlFont_64 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_64);
-    iconFont_100   = GUI_Init_Extern_Font_Stream(GUI_ICON_FONT_100);    
+//    iconFont_100   = GUI_Init_Extern_Font_Stream(GUI_ICON_FONT_100);    
   }
 #endif 
  

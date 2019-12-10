@@ -159,7 +159,8 @@ static void exit_owner_draw(DRAWITEM_HDR *ds) //绘制一个按钮外观
   
   SetPenSize(hdc, 2);
 
-  InflateRect(&rc, 0, -5);
+  InflateRect(&rc, 0, -20);
+  rc.w = 36;
   
   for(int i=0; i<4; i++)
   {
@@ -1156,7 +1157,7 @@ static	LRESULT	WinProc(HWND hwnd,U32 msg,WPARAM wParam,LPARAM lParam)
 				}
 				////
 
-				CreateWindow(BUTTON,L"-",WS_VISIBLE|WS_OWNERDRAW|WS_TRANSPARENT,747,15,36,36,hwnd,IDC_EIXT,NULL,NULL);
+				CreateWindow(BUTTON,L"-",WS_VISIBLE|WS_OWNERDRAW|WS_TRANSPARENT,747,0,53,50,hwnd,IDC_EIXT,NULL,NULL);
 				
 				GetClientRect(hwnd,&rc);
 				x=(rc.w>>1)+8;

@@ -97,7 +97,8 @@ static void CollectVoltage_ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
   
   SetPenSize(hdc, 2);
 
-  InflateRect(&rc, 0, -1);
+  InflateRect(&rc, 0, -11);
+  rc.w = 36;
   
   for(int i=0; i<4; i++)
   {
@@ -215,7 +216,7 @@ static LRESULT	CollectVoltage_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
       ADCx_Init();    // ³õÊ¼»¯ ADC
             
       CreateWindow(BUTTON, L"O", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY |WS_OWNERDRAW|WS_VISIBLE,
-                  740, 10, 36, 36, hwnd, eID_ADC_EXIT, NULL, NULL); 
+                  740, 0, 60, 46, hwnd, eID_ADC_EXIT, NULL, NULL); 
 
       rc.w = GUI_XSIZE / 2;
       rc.h = TitleHeight;

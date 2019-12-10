@@ -82,6 +82,10 @@ void recorder(const TCHAR *recfile)
 			rechead.data.ChunkSize=sectorsize*BUFSIZE;		//数据大小
 			f_lseek(&file,0);							//偏移到文件头.
 			result=f_write(&file,&rechead,sizeof(__WaveHeader),&bw);//写入头数据
+      if(result)
+			{
+				printf("err:%d\n",result);  
+			}
 			//printf("%s->write sector:%d,result:%d,num:%d\n",recfile,sectorsize,result,bw);
 			f_close(&file);
 			VS_HD_Reset();		   	//硬复位

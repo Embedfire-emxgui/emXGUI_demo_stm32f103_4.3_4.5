@@ -166,7 +166,7 @@ static LRESULT Win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	   	   RECT rc;
          GetClientRect(hwnd, &rc);
          /* 需要分配N+1项，最后一项为空 */
-        GUI_DEBUG("共有%d", music_file_num);
+//        GUI_DEBUG("共有%d", music_file_num);
          menu_list = (struct __obj_list *)GUI_VMEM_Alloc(sizeof(struct __obj_list)*(music_file_num+1));
          wbuf = (WCHAR (*)[128])GUI_VMEM_Alloc(sizeof(WCHAR) * music_file_num * 128);
          if(menu_list == NULL) 
@@ -177,7 +177,7 @@ static LRESULT Win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             
          char p[128] ;
          strcpy(p, music_lcdlist[i]);
-         printf("%s\n",p);
+//         printf("%s\n",p);
          int t, L;
          L = (int)strlen(p);
          if (L > 13)
@@ -211,7 +211,7 @@ static LRESULT Win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          cfg.bg_color = 0;
          wnd = CreateWindow(&wcex_ListMenu,
                       L"ListMenu1",
-                      WS_VISIBLE | LMS_ICONFRAME|LMS_PAGEMOVE,
+                      WS_VISIBLE | LMS_ICONFRAME|LMS_PAGEMOVE|WS_CLIPSIBLINGS,
                       rc.x + 48, rc.y + 48, rc.w - 96, rc.h-48,
                       hwnd,
                       ID_LIST_1,
@@ -345,7 +345,7 @@ void GUI_MusicList_DIALOG(void)
 	hwnd = CreateWindowEx(WS_EX_NOFOCUS|WS_EX_FRAMEBUFFER,
                          &wcex,
                          L"GUI_MusicList_DIALOG",
-                         WS_CLIPSIBLINGS,
+                         WS_VISIBLE|WS_CLIPCHILDREN|WS_OVERLAPPED,
                          0, 0, GUI_XSIZE, GUI_YSIZE,
                          NULL, NULL, NULL, NULL);
 	//显示主窗口

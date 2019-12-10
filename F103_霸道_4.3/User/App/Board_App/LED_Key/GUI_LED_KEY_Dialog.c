@@ -90,7 +90,8 @@ static void LED_KEY_ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
   
   SetPenSize(hdc, 2);
 
-  InflateRect(&rc, 0, -1);
+  InflateRect(&rc, 0, -26);
+  rc.w = 36;
   
   for(int i=0; i<4; i++)
   {
@@ -111,7 +112,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       GetClientRect(hwnd, &rc); 
 
 			CreateWindow(BUTTON, L"O", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY |WS_OWNERDRAW|WS_VISIBLE,
-									740, 25, 36, 36, hwnd , eID_LED_KEY_EXIT, NULL, NULL); 
+									740, 0, 60, 60, hwnd , eID_LED_KEY_EXIT, NULL, NULL); 
 			CreateWindow(BUTTON, L"USER", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY |WS_OWNERDRAW|WS_VISIBLE,
 									46,  393, 166, 70, hwnd, eID_LED_USER, NULL, NULL); 
 			CreateWindow(BUTTON, L"KEY1", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY |WS_OWNERDRAW|WS_VISIBLE,
