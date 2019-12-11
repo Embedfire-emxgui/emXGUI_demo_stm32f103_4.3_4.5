@@ -204,6 +204,10 @@ extern uint8_t Ov7725_vsync;	 /* 帧同步信号标志 */
 #define      macOV7725_DATA_6_GPIO_PIN                   GPIO_Pin_14
 #define      macOV7725_DATA_7_GPIO_PIN                   GPIO_Pin_15
 
+#define HardwareVersion  1     // 硬件版本选择宏（0：霸道 V1   1:霸道V2）
+
+#if HardwareVersion
+/* V2引脚 */
 #define      macOV7725_VSYNC_SCK_APBxClock_FUN           RCC_APB2PeriphClockCmd
 #define      macOV7725_VSYNC_GPIO_CLK                    RCC_APB2Periph_GPIOC
 #define      macOV7725_VSYNC_GPIO_PORT                   GPIOC
@@ -214,8 +218,19 @@ extern uint8_t Ov7725_vsync;	 /* 帧同步信号标志 */
 #define      macOV7725_VSYNC_EXTI_IRQ                    EXTI3_IRQn
 #define      macOV7725_VSYNC_EXTI_INT_FUNCTION           EXTI3_IRQHandler
 
+#else
+/* V1引脚 */
+#define      macOV7725_VSYNC_SCK_APBxClock_FUN           RCC_APB2PeriphClockCmd
+#define      macOV7725_VSYNC_GPIO_CLK                    RCC_APB2Periph_GPIOE
+#define      macOV7725_VSYNC_GPIO_PORT                   GPIOE
+#define      macOV7725_VSYNC_GPIO_PIN                    GPIO_Pin_5
+#define      macOV7725_VSYNC_EXTI_SOURCE_PORT            GPIO_PortSourceGPIOE
+#define      macOV7725_VSYNC_EXTI_SOURCE_PIN             GPIO_PinSource5
+#define      macOV7725_VSYNC_EXTI_LINE                   EXTI_Line5
+#define      macOV7725_VSYNC_EXTI_IRQ                    EXTI9_5_IRQn
+#define      macOV7725_VSYNC_EXTI_INT_FUNCTION           EXTI9_5_IRQHandler
 
-
+#endif
 
 #define FIFO_CS_H()     macOV7725_CS_GPIO_PORT->BSRR =macOV7725_CS_GPIO_PIN	  
 #define FIFO_CS_L()     macOV7725_CS_GPIO_PORT->BRR  =macOV7725_CS_GPIO_PIN	  /*拉低使FIFO输出使能*/
