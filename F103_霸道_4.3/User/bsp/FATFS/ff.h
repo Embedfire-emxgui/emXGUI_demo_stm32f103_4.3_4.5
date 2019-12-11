@@ -15,6 +15,10 @@
 / by use of this software.
 /---------------------------------------------------------------------------*/
 
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
 
 #ifndef _FATFS
 #define _FATFS	64180	/* Revision ID */

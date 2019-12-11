@@ -261,7 +261,7 @@ static 	 LRESULT  	desktop_proc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 //          SetBrushColor(hdc, MapRGB(hdc, 255, 0, 0));
 //          FillRect(hdc, &rc);
 //       }
-       SetBrushColor(hdc, MapRGB(hdc, 255, 0, 0));
+       SetBrushColor(hdc, MapRGB(hdc, 0, 0, 0));
        FillRect(hdc, &rc);
 		}
 		return TRUE;  

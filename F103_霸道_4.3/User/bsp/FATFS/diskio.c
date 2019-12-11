@@ -114,12 +114,9 @@ DRESULT disk_read (
 			}
 			
       /* 进入临界段，临界段可以嵌套 */
-//      taskENTER_CRITICAL();
+      taskENTER_CRITICAL();
       
 			SD_state=SD_ReadMultiBlocks(buff,(uint64_t)(sector*SD_BLOCKSIZE),SD_BLOCKSIZE,count);
-      
-      /* 退出临界段 */
-//      taskEXIT_CRITICAL();
       
 		  if(SD_state==SD_OK)
 			{
@@ -127,6 +124,8 @@ DRESULT disk_read (
 				SD_state=SD_WaitReadOperation();
 				while(SD_GetStatus() != SD_TRANSFER_OK);
 			}
+      /* 退出临界段 */
+      taskEXIT_CRITICAL();
 			if(SD_state!=SD_OK)
 				status = RES_PARERR;
 		  else

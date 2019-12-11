@@ -414,7 +414,7 @@ SD_Error SD_WaitWriteOperation(void);
 /** 
   * @brief  SDIO Data Transfer Frequency (25MHz max) 
   */
-#define SDIO_TRANSFER_CLK_DIV            ((uint8_t)0x07)
+#define SDIO_TRANSFER_CLK_DIV            ((uint8_t)0x06)
 
 #define SD_SDIO_DMA                      DMA2
 #define SD_SDIO_DMA_CLK                  RCC_AHBPeriph_DMA2

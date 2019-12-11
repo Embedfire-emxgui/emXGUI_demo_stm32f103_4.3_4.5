@@ -43,6 +43,7 @@
 "..\..\output\ff.o"
 "..\..\output\diskio.o"
 "..\..\output\extern_cc936.o"
+"..\..\output\syscall.o"
 "..\..\output\croutine.o"
 "..\..\output\event_groups.o"
 "..\..\output\list.o"

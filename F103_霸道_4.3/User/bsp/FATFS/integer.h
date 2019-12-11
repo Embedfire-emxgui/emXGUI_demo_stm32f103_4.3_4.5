@@ -5,14 +5,14 @@
 #ifndef _FF_INTEGER
 #define _FF_INTEGER
 
-#include "def.h"
-
 #ifdef _WIN32	/* Development platform */
 
 #include <windows.h>
 #include <tchar.h>
 
 #else			/* Embedded platform */
+
+#include "def.h"
 
 /* This type MUST be 8-bit */
 typedef unsigned char	BYTE;
