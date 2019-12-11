@@ -1,3 +1,10 @@
+关于本项目
+------------------
+本项目通过git开源
+-  github仓库地址：https://github.com/Embdefire/emXGUI_demo_stm32f103_4.3_4.5
+
+-  gitee 地址：https://gitee.com/wildfireteam/emXGUI_demo_stm32f103_4.3_4.5
+
 霸道开发板emxGUI综合程序简介
 ------------------
 
