@@ -1,16 +1,16 @@
 关于本项目
 ------------------
 本项目通过git开源
--  github仓库地址：https://github.com/Embdefire/emXGUI_demo_stm32f103_4.3_4.5
+-  github仓库地址：https://github.com/Embedfire/emXGUI_demo_stm32f103_4.3_4.5
 
 -  gitee 地址：https://gitee.com/wildfireteam/emXGUI_demo_stm32f103_4.3_4.5
 
 霸道开发板emxGUI综合程序简介
 ------------------
 
-野火提供的emXGUI综合示例程序，是基于emXGUI图形软件库及FreeRTOS操作系统制作的人机交互界面程序。该程序界面酷炫，性能卓越，非常适合作为嵌入式人机交互界面的参考示例，在基础教程代码中已将野火所有开发板和屏幕适配，目前综合程序已适配表格1‑1中的野火系列开发板。
+野火提供的emXGUI综合示例程序，是基于emXGUI图形软件库及FreeRTOS操作系统制作的人机交互界面程序。该程序界面酷炫，性能卓越，非常适合作为嵌入式人机交互界面的参考示例，在基础教程代码中已将野火所有开发板和屏幕适配，目前综合程序已适配表格11中的野火系列开发板。
 
-表格 1‑1 emXGUI综合示例程序适配的开发板
+表格 11 emXGUI综合示例程序适配的开发板
 
 | 开发板                | 适配情况 | 图形库 | 操作系统                 |
 |-----------------------|----------|--------|-----------------------|
@@ -18,10 +18,11 @@
 | F429_挑战者开发板_V2   | 已适配   | emXGUI | RT-Thread，FreeRTOS     |
 | H743_Pro开发板        | 已适配   | emXGUI | FreeRTOS               |
 | H750_Pro开发板        | 已适配   | emXGUI | FreeRTOS               |
+| F103_指南者开发板       | 已适配   | emXGUI  |FreeRTOS               |
 | F103_霸道开发板       | 已适配   | emXGUI  |FreeRTOS               |
 | F407_霸天虎开发板     | 已适配    | emXGUI | FreeRTOS                |
-| F767_挑战者开发板_V2  | 正在开发 | emXGUI | FreeRTOS                |
-| H743_挑战者开发板_V2 | 正在开发 | emXGUI | FreeRTOS                |
+| F767_挑战者开发板_V2  | 已适配 | emXGUI | FreeRTOS                |
+| H743_挑战者开发板_V2 | 已适配 | emXGUI | FreeRTOS                |
 | i.MX RT1052系列开发板 | 正在开发 | emXGUI | FreeRTOS                |
 
 如何运行emXGUI综合程序
